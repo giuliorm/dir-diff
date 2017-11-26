@@ -2,52 +2,83 @@ package ru.juriasan.util;
 
 import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class FileManager {
 
-    private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
-    private static final String CANNOT_SET_READABLE = "Cannot set file %s as readable. Possibly, user doesn't have" +
+
+public abstract  class FileManager {
+
+    protected static final String CANNOT_SET_READABLE = "Cannot set file %s as readable. Possibly, user doesn't have" +
             "enough permissions.";
-    private static final String CANNOT_SET_WRITABLE = "Cannot set file %s as writeable. Possibly, user doesn't have" +
+    protected static final String CANNOT_SET_WRITABLE = "Cannot set file %s as writeable. Possibly, user doesn't have" +
             "enough permissions.";
-    private static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user doesn't have" +
+    protected static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user doesn't have" +
             "enough permissions.";
-    private static final String FILE_ALREADY_EXISTS = "File %s already exists.";
-    private static final String CANNOT_OBTAIN_LIST_OF_FILES = "Cannot obtain the list of files from file %s.";
-    private static final String FILE_SHOULD_BE_A_DIRECTORY = "The file %s should be a directory";
-    private static final String FILE_IS_NOT_READABLE = "File %s is not readable.";
-    private static final String FILE_IS_NOT_WRITEABLE = "File %s is not writeable.";
-    private static final String FILE_IS_NOT_EXECUTABLE = "File %s is not executable.";
-    /**
-     * Reads all data from file into memory.
-     * @param file
-     * @return
-     * @throws IOException
-     */
-    public String readFile(File file) throws IOException {
-        if (file == null)
-            return null;
-        final StringBuilder data  = new StringBuilder();
-        Files.lines(file.toPath()).forEach(line -> data.append(line));
-        return data.toString();
+    protected static final String FILE_ALREADY_EXISTS = "File %s already exists.";
+    protected static final String FILE_SHOULD_BE_A_DIRECTORY = "The file %s should be a directory";
+    protected static final String FILE_IS_NOT_READABLE = "File %s is not readable.";
+    protected static final String FILE_IS_NOT_WRITEABLE = "File %s is not writeable.";
+    protected static final String FILE_IS_NOT_EXECUTABLE = "File %s is not executable.";
+    protected static final String CANNOT_OBTAIN_LIST_OF_FILES = "Cannot obtain the list of files from file %s.";
+
+    private volatile static DirectoryManager directoryManager;
+    private volatile static PlainFileManager plainFileManager;
+
+    public static DirectoryManager getDirectoryManager() {
+        if (directoryManager == null) {
+            synchronized (FileManager.class) {
+                if (directoryManager == null)
+                    directoryManager = new DirectoryManager();
+            }
+        }
+        return directoryManager;
     }
 
-    private static void setExecutableAndAssert(File file) throws IOException {
+    public static FileManager getPlainFileManager() {
+        if (plainFileManager == null) {
+            synchronized (FileManager.class) {
+                if (plainFileManager == null)
+                    plainFileManager = new PlainFileManager();
+            }
+        }
+        return plainFileManager;
+    }
+
+    public abstract File get(String path) throws IOException;
+    public abstract File create(String path) throws IOException;
+    public abstract boolean diff(File first, File second, File result) throws IOException;
+    public abstract  boolean diff(String first, String second, String result) throws IOException;
+    public abstract boolean diff(Set<File> first, Set<File> second, File result) throws IOException;
+
+    public boolean compareNames(File first, File second) throws IOException {
+        return Objects.equals(first.getName(), second.getName());
+    }
+
+    public boolean comparePath(File first, File second) throws IOException {
+        return Objects.equals(first.getCanonicalPath(), second.getCanonicalPath());
+    }
+
+    public static void setExecutableAndAssert(File file) throws IOException {
         if (!file.setExecutable(true))
             throw new IOException(String.format(CANNOT_SET_EXECUTABLE, file.getCanonicalPath()));
     }
 
-    private static void setWriteableAndAssert(File file) throws IOException {
+    public static void setWriteableAndAssert(File file) throws IOException {
         if (!file.setWritable(true))
             throw new IOException(String.format(CANNOT_SET_WRITABLE, file.getCanonicalPath()));
     }
 
-    private static void setReadableAndAssert(File file) throws IOException {
+    public static void setReadableAndAssert(File file) throws IOException {
         if (!file.setReadable(true))
             throw new IOException(String.format(CANNOT_SET_READABLE, file.getCanonicalPath()));
     }
@@ -72,81 +103,5 @@ public class FileManager {
             throw new FileAlreadyExistsException(String.format(FILE_ALREADY_EXISTS, file.getCanonicalPath()));
     }
 
-    public synchronized File createDirectory(File file) throws IOException {
-        assertExists(file);
-        if (!file.mkdir())
-            throw new IOException(String.format(CANNOT_CREATE_FILE, file.getCanonicalPath()));
-        setReadableAndAssert(file);
-        setWriteableAndAssert(file);
-        setExecutableAndAssert(file);
-        return file;
-    }
-    public synchronized File createDirectory(String path) throws IOException {
-        File file = new File(path);
-        return createDirectory(file);
-    }
 
-    public Set<File> getFiles(String path) throws IOException {
-        File file = getDirectory(path);
-        return getFiles(file);
-    }
-
-    public Set<File> getFiles(File file) throws IOException {
-        File[] files = file.listFiles();
-        if (files == null)
-            throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, file.getCanonicalPath()));
-        return new HashSet<>(Arrays.asList(files));
-    }
-
-    public Map<String, File> join(Collection<File> first, Collection<File> second) throws IOException {
-        Map<String, File> files = new HashMap<>();
-        for (File file : first)
-            files.putIfAbsent(file.getCanonicalPath(), file);
-        for(File file : second)
-            files.putIfAbsent(file.getCanonicalPath(), file);
-        return files;
-    }
-
-    public boolean compare(File first, File second) throws IOException {
-        if (first == null || second == null)
-            throw new NullPointerException("Compare arguments cannot be null.");
-        return FileUtils.contentEquals(first, second);
-    }
-
-    public boolean comparePath(File first, File second) throws IOException {
-        if (first == null || second == null)
-            throw new NullPointerException("Compare arguments cannot be null.");
-        return Objects.equals(first.getCanonicalPath(), second.getCanonicalPath());
-    }
-    public void copyFile(String pathSource, String pathTarget) throws IOException {
-        File source = new File(pathSource);
-        File target = new File(pathTarget);
-        FileUtils.copyFile(source, target);
-    }
-
-    public File getDirectory(String path) throws IOException {
-        File file = new File(path);
-        assertExists(file);
-        assertDirectory(file);
-        assertReadable(file);
-        assertExecutable(file);
-        return file;
-    }
-
-    private void handleDirectories(Set<File> directories) {
-        
-    }
-
-    public void diff(File first, File second, File result) throws IOException {
-        if (first == null || second == null || result == null)
-            throw new NullPointerException("Diff arguments cannot be null");
-        Map<String, File> filesList = join(getFiles(first), getFiles(second));
-    }
-
-    public void diff(String first, String second, String result) throws IOException {
-        diff(getDirectory(first), getDirectory(second), createDirectory(result));
-       // Set<File> directories = filesList.stream().filter(file -> file.isDirectory())
-        //        .collect(Collectors.toSet());
-
-    }
 }
