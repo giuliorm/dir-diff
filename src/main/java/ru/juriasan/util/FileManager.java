@@ -59,6 +59,8 @@ public abstract  class FileManager {
     public abstract boolean diff(File first, File second, File result) throws IOException;
     public abstract  boolean diff(String first, String second, String result) throws IOException;
     public abstract boolean diff(Set<File> first, Set<File> second, File result) throws IOException;
+    public abstract void copy(String pathSource, String pathTarget) throws IOException;
+    public abstract void copy(File source, File target) throws IOException;
 
     public boolean compareNames(File first, File second) throws IOException {
         return Objects.equals(first.getName(), second.getName());

@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PlainFileManager extends FileManager {
 
@@ -35,7 +34,7 @@ public class PlainFileManager extends FileManager {
     public boolean diff(File first, File second, File result) throws IOException {
         if (first == null || second == null)
             throw new NullPointerException("Compare arguments cannot be null.");
-        return FileUtils.contentEquals(first, second);
+        return !FileUtils.contentEquals(first, second);
     }
 
     @Override
@@ -44,17 +43,31 @@ public class PlainFileManager extends FileManager {
     }
 
     @Override
-    boolean diff(Set<File> first, Set<File> second, File result) throws IOException {
+    public boolean diff(Set<File> first, Set<File> second, File result) throws IOException {
         Iterator<File> firstFiles = first.stream().sorted(Comparator.comparing(File::getName)).iterator();
         Iterator<File> secondFiles = second.stream().sorted(Comparator.comparing(File::getName)).iterator();
+        boolean isThereADiff = false;
         while(firstFiles.hasNext() || secondFiles.hasNext()) {
             File firstNext = firstFiles.hasNext() ? firstFiles.next() : null;
             File secondNext = secondFiles.hasNext() ? secondFiles.next() : null;
-            if (compareNames(firstNext, secondNext)) {
-                String newPath = newPathForEqualNames(firstNext, secondNext, result);
-
+            if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
+                if (diff(firstNext, secondNext, result)) {
+                    isThereADiff |= true;
+                    String name = firstNext.getName().equals("") ? secondNext.getName() : firstNext.getName();
+                    NewFilenameManager manager = new NewFilenameManager(name);
+                    copy(firstNext.getCanonicalPath(), manager.newPath(result));
+                    copy(secondNext.getCanonicalPath(), manager.newPath(result));
+                }
+            }
+            else {
+                isThereADiff |= true;
+                if (firstNext != null)
+                    copy(firstNext.getCanonicalPath(), new NewFilenameManager(firstNext.getName()).newPath(result));
+                if (secondNext != null)
+                    copy(secondNext.getCanonicalPath(), new NewFilenameManager(secondNext.getName()).newPath(result));
             }
         }
+        return isThereADiff;
     }
     /**
      * Reads all data from file into memory.
@@ -70,9 +83,15 @@ public class PlainFileManager extends FileManager {
         return data.toString();
     }
 
-    public void copyFile(String pathSource, String pathTarget) throws IOException {
-        File source = new File(pathSource);
-        File target = new File(pathTarget);
+    @Override
+    public void copy(String pathSource, String pathTarget) throws IOException {
+        File source = get(pathSource);
+        File target = get(pathTarget);
+        FileUtils.copyFile(source, target);
+    }
+
+    @Override
+    public void copy(File source, File target) throws IOException {
         FileUtils.copyFile(source, target);
     }
 }

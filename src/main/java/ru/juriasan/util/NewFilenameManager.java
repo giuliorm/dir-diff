@@ -28,9 +28,11 @@ public class NewFilenameManager implements FilenameFilter {
 
     private final Pattern namePattern;
     private static final String NAME = "%s (%d)";
-    private static final String REGEX = "%s (\\([1-9]+\\))";
+    private static final String REGEX = "%s[ ]{1}(\\([1-9]*\\))";
+    private String sourceName;
 
     public NewFilenameManager(String name) {
+        this.sourceName = name;
         final String initialPattern = String.format(REGEX, name);
         this.namePattern = Pattern.compile(initialPattern);
     }
@@ -61,21 +63,23 @@ public class NewFilenameManager implements FilenameFilter {
         return namePattern.matcher(name).matches();
     }
 
-    public synchronized String newPath(String name, File result) throws IOException {
-        if (name == null || name.equals(""))
+    public synchronized String newPath(File result) throws IOException {
+        if (sourceName == null || sourceName.equals(""))
             throw new IOException("Filename cannot be null or empty!");
 
-        String newName = Paths.get(result.getCanonicalPath(), name).toString();
-        File[] filterByName =  FileManager.getDirectoryManager().getFiles(result, new EqualFilenameFilter(name));
-        if (filterByName.length > 0) {
+        String newName = Paths.get(result.getCanonicalPath(), sourceName).toString();
+        //File[] filterByName =  FileManager.getDirectoryManager().getFiles(result, new EqualFilenameFilter(sourceName));
+        //if (filterByName.length > 0) {
+
+            //TODO: check whether the name corresponds to number form.
             //NewFilenameManager filenameFilter = new NewFilenameManager(name);
-            File[] filter = FileManager.getDirectoryManager().getFiles(result, this);
-            if (filter.length > 0) {
-                Arrays.sort(filter, Comparator.comparing(File::getName));
-                String newShortName = newName(filter[filter.length - 1].getName());
-                newName = Paths.get(result.getCanonicalPath(), newShortName).toString();
-            }
+        File[] filter = FileManager.getDirectoryManager().getFiles(result, this);
+        if (filter.length > 0) {
+            Arrays.sort(filter, Comparator.comparing(File::getName));
+            String newShortName = newName(filter[filter.length - 1].getName());
+            newName = Paths.get(result.getCanonicalPath(), newShortName).toString();
         }
+        //}
         return newName;
     }
 }
