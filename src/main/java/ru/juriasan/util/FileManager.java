@@ -1,19 +1,10 @@
 package ru.juriasan.util;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 
 public abstract  class FileManager {
@@ -65,10 +56,6 @@ public abstract  class FileManager {
 
     public boolean compareNames(File first, File second) throws IOException {
         return Objects.equals(first.getName(), second.getName());
-    }
-
-    public boolean comparePath(File first, File second) throws IOException {
-        return Objects.equals(first.getCanonicalPath(), second.getCanonicalPath());
     }
 
     public static void setExecutableAndAssert(File file) throws IOException {

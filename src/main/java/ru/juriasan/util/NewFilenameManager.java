@@ -6,23 +6,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-class EqualFilenameFilter implements FilenameFilter {
-
-    private final String name;
-
-    public EqualFilenameFilter(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public boolean accept(File dir, String name) {
-        return Objects.equals(name, this.name);
-    }
-}
 
 public class NewFilenameManager implements FilenameFilter {
 
@@ -73,18 +58,12 @@ public class NewFilenameManager implements FilenameFilter {
             throw new IOException("Filename cannot be null or empty!");
 
         String newName = Paths.get(result.getCanonicalPath(), sourceName).toString();
-        //File[] filterByName =  FileManager.getDirectoryManager().getFiles(result, new EqualFilenameFilter(sourceName));
-        //if (filterByName.length > 0) {
-
-            //TODO: check whether the name corresponds to number form.
-            //NewFilenameManager filenameFilter = new NewFilenameManager(name);
         File[] filter = FileManager.getDirectoryManager().getFiles(result, this);
         if (filter.length > 0) {
             Arrays.sort(filter, Comparator.comparing(File::getName));
             String newShortName = newName(filter[filter.length - 1].getName());
             newName = Paths.get(result.getCanonicalPath(), newShortName).toString();
         }
-        //}
         return newName;
     }
 }
