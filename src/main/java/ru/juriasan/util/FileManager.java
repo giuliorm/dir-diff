@@ -20,10 +20,11 @@ public abstract  class FileManager {
 
     protected static final String CANNOT_SET_READABLE = "Cannot set file %s as readable. Possibly, user doesn't have" +
             "enough permissions.";
-    protected static final String CANNOT_SET_WRITABLE = "Cannot set file %s as writeable. Possibly, user doesn't have" +
+    protected static final String CANNOT_SET_WRITABLE = "Cannot set file %s as writeable. Possibly, user doesn't have " +
             "enough permissions.";
-    protected static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user doesn't have" +
+    protected static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user doesn't have " +
             "enough permissions.";
+    protected static final String FILE_DOES_NOT_EXISTS = "File %s does not exists.";
     protected static final String FILE_ALREADY_EXISTS = "File %s already exists.";
     protected static final String FILE_SHOULD_BE_A_DIRECTORY = "The file %s should be a directory";
     protected static final String FILE_IS_NOT_READABLE = "File %s is not readable.";
@@ -100,10 +101,14 @@ public abstract  class FileManager {
             throw new IOException(String.format(FILE_IS_NOT_READABLE, file.getCanonicalPath()));
     }
 
-    public static void assertExists(File file) throws IOException {
+    public static void assertNotExists(File file) throws IOException {
         if (file.exists())
             throw new FileAlreadyExistsException(String.format(FILE_ALREADY_EXISTS, file.getCanonicalPath()));
     }
 
+    public static void assertExists(File file) throws IOException {
+        if (!file.exists())
+            throw new FileAlreadyExistsException(String.format(FILE_DOES_NOT_EXISTS, file.getCanonicalPath()));
+    }
 
 }

@@ -86,7 +86,7 @@ public class PlainFileManager extends FileManager {
     @Override
     public void copy(String pathSource, String pathTarget) throws IOException {
         File source = get(pathSource);
-        File target = get(pathTarget);
+        File target = create(pathTarget);
         FileUtils.copyFile(source, target);
     }
 

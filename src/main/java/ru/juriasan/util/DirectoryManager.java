@@ -16,11 +16,11 @@ public class DirectoryManager extends FileManager {
     }
 
     public synchronized File create(File file) throws IOException {
-        assertExists(file);
+        assertNotExists(file);
         if (!file.mkdir())
             throw new IOException(String.format(CANNOT_CREATE_DIRECTORY, file.getCanonicalPath()));
         setReadableAndAssert(file);
-        setWriteableAndAssert(file);
+        //setWriteableAndAssert(file);
         setExecutableAndAssert(file);
         return file;
     }
