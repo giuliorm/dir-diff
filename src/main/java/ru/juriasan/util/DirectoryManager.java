@@ -9,6 +9,7 @@ public class DirectoryManager extends FileManager {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create new directory with name %s";
 
+
     @Override
     public synchronized File create(String path) throws IOException {
         File file = new File(path);
@@ -63,8 +64,9 @@ public class DirectoryManager extends FileManager {
                 secondDirectories.add(file);
             else secondPlainFiles.add(file);
 
-        return diff(firstDirectories, secondDirectories, result) ||
-               FileManager.getPlainFileManager().diff(firstPlainFiles, secondPlainFiles, result);
+        boolean isThereADiff = diff(firstDirectories, secondDirectories, result);
+        isThereADiff |= FileManager.getPlainFileManager().diff(firstPlainFiles, secondPlainFiles, result);
+        return isThereADiff;
     }
 
     @Override
@@ -76,24 +78,14 @@ public class DirectoryManager extends FileManager {
             File firstNext = firstDirectories.hasNext() ? firstDirectories.next() : null;
             File secondNext = secondDirectories.hasNext() ? secondDirectories.next() : null;
             if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
-                String name = firstNext.getName().equals("") ? secondNext.getName() : firstNext.getName();
-                NewFilenameManager manager = new NewFilenameManager(name);
-                File newDirectory = null;
-                try {
-                    String newPath = manager.newPath(result);
-                    newDirectory = create(newPath);
-                }
-                catch (IOException e) {
-                    System.out.println(String.format(CANNOT_CREATE_DIRECTORY, ""));
-                    e.printStackTrace();
-                }
-                if (newDirectory != null)
-                    isThereDiff |= diff(firstNext, secondNext, newDirectory);
+                File newDirectory = new File(NewFilenameManager.newPath(firstNext, result));
+                isThereDiff |= diff(firstNext, secondNext, newDirectory);
             } else {
+                isThereDiff |= true;
                 if (firstNext != null)
-                    copy(firstNext.getCanonicalPath(), new NewFilenameManager(firstNext.getName()).newPath(result));
+                    copy(firstNext, result);
                 if (secondNext != null)
-                    copy(secondNext.getCanonicalPath(), new NewFilenameManager(secondNext.getName()).newPath(result));
+                    copy(secondNext, result);
             }
         }
         return isThereDiff;
@@ -102,18 +94,18 @@ public class DirectoryManager extends FileManager {
     @Override
     public void copy(String pathSource, String pathTarget) throws IOException {
         File source = get(pathSource);
-        File target = create(pathTarget);
+        File target = get(pathTarget);
         copy(source, target);
     }
 
     @Override
-    public void copy(File source, File target) throws IOException {
+    public void copy(File source, File targetDirectory) throws IOException {
         File[] sourceFiles = getFiles(source, null);
+        File target = create(NewFilenameManager.newPath(source, targetDirectory));
         if (sourceFiles == null)
             throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, source.getCanonicalPath()));
         for (File file : sourceFiles) {
-            FileManager.getPlainFileManager().copy(file.getCanonicalPath(),
-                    new NewFilenameManager(file.getName()).newPath(target));
+            FileManager.getPlainFileManager().copy(file.getCanonicalPath(), NewFilenameManager.newPath(file, target));
         }
     }
 

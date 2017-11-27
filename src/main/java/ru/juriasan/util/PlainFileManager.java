@@ -53,18 +53,23 @@ public class PlainFileManager extends FileManager {
             if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
                 if (diff(firstNext, secondNext, result)) {
                     isThereADiff |= true;
-                    String name = firstNext.getName().equals("") ? secondNext.getName() : firstNext.getName();
-                    NewFilenameManager manager = new NewFilenameManager(name);
-                    copy(firstNext.getCanonicalPath(), manager.newPath(result));
-                    copy(secondNext.getCanonicalPath(), manager.newPath(result));
+                    if (!result.exists())
+                        result = FileManager.getDirectoryManager().create(result);
+                    //String name = firstNext.getName().equals("") ? secondNext.getName() : firstNext.getName();
+                    //NewFilenameManager manager = new NewFilenameManager(name);
+                    //copy(firstNext.getCanonicalPath(), manager.newPath(result));
+                    //copy(secondNext.getCanonicalPath(), manager.newPath(result));
+                    copy(firstNext.getCanonicalPath(), NewFilenameManager.newPath(firstNext, result));
+                    copy(secondNext.getCanonicalPath(), NewFilenameManager.newPath(secondNext, result));
+
                 }
             }
             else {
                 isThereADiff |= true;
                 if (firstNext != null)
-                    copy(firstNext.getCanonicalPath(), new NewFilenameManager(firstNext.getName()).newPath(result));
+                    copy(firstNext.getCanonicalPath(), NewFilenameManager.newPath(firstNext, result));
                 if (secondNext != null)
-                    copy(secondNext.getCanonicalPath(), new NewFilenameManager(secondNext.getName()).newPath(result));
+                    copy(secondNext.getCanonicalPath(), NewFilenameManager.newPath(secondNext, result));
             }
         }
         return isThereADiff;
@@ -84,14 +89,18 @@ public class PlainFileManager extends FileManager {
     }
 
     @Override
-    public void copy(String pathSource, String pathTarget) throws IOException {
-        File source = get(pathSource);
-        File target = create(pathTarget);
+    public synchronized void copy(File source, File target) throws IOException {
+        //String newPath = new NewFilenameManager(file.getName()).newPath(directory);
+        //File target = create(newPath);
         FileUtils.copyFile(source, target);
     }
 
     @Override
-    public void copy(File source, File target) throws IOException {
-        FileUtils.copyFile(source, target);
+    public synchronized void copy(String pathSource, String pathToTarget) throws IOException {
+        File source = get(pathSource);
+        File target = create(pathToTarget);
+        //does it create path to directory that does not exist yet?
+        copy(source, target);
+        //FileUtils.copyFile(source, target);
     }
 }

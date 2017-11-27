@@ -26,19 +26,22 @@ class EqualFilenameFilter implements FilenameFilter {
 
 public class NewFilenameManager implements FilenameFilter {
 
-    private final Pattern namePattern;
+    private final Pattern namePatternNotStrict;
+    private final Pattern namePatternStrict;
     private static final String NAME = "%s (%d)";
-    private static final String REGEX = "%s[ ]{1}(\\([1-9]*\\))";
+    private static final String NUMBER_FORM_NOT_STRICT = "%s[ ]?(\\([1-9]*\\))?";
+    private static final String NUMBER_FORM_STRICT = "%s[ ]{1}(\\([1-9]+\\))";
     private String sourceName;
 
     public NewFilenameManager(String name) {
         this.sourceName = name;
-        final String initialPattern = String.format(REGEX, name);
-        this.namePattern = Pattern.compile(initialPattern);
+        final String initialPattern = String.format(NUMBER_FORM_NOT_STRICT, name);
+        this.namePatternNotStrict = Pattern.compile(initialPattern);
+        this.namePatternStrict = Pattern.compile(String.format(NUMBER_FORM_STRICT, name));
     }
 
     private int getFileNumber(String name) {
-        Matcher m = namePattern.matcher(name);
+        Matcher m = namePatternStrict.matcher(name);
         int number = 0;
         if (m.matches()) {
             try {
@@ -53,17 +56,19 @@ public class NewFilenameManager implements FilenameFilter {
 
     public String newName(String name) {
         int number = getFileNumber(name);
-        if (number == 0)
-            return name;
         return number != -1 ? String.format(NAME, name, number + 1) : null;
     }
 
     @Override
     public boolean accept(File dir, String name) {
-        return namePattern.matcher(name).matches();
+        return namePatternNotStrict.matcher(name).matches();
     }
 
-    public synchronized String newPath(File result) throws IOException {
+    public static synchronized String newPath(File source, File targetDirectory) throws IOException {
+        return new NewFilenameManager(source.getName()).newPath(targetDirectory);
+    }
+
+    public String newPath(File result) throws IOException {
         if (sourceName == null || sourceName.equals(""))
             throw new IOException("Filename cannot be null or empty!");
 
