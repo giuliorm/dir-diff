@@ -1,6 +1,7 @@
-package ru.juriasan.util;
+package ru.juriasan.services;
 
 import org.apache.commons.io.FileUtils;
+import ru.juriasan.util.NewFilenameManager;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -8,7 +9,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 
-public class PlainFileManager extends FileManager {
+public class PlainFileService extends FileService {
 
     private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
 
@@ -54,14 +55,9 @@ public class PlainFileManager extends FileManager {
                 if (diff(firstNext, secondNext, result)) {
                     isThereADiff |= true;
                     if (!result.exists())
-                        result = FileManager.getDirectoryManager().create(result);
-                    //String name = firstNext.getName().equals("") ? secondNext.getName() : firstNext.getName();
-                    //NewFilenameManager manager = new NewFilenameManager(name);
-                    //copy(firstNext.getCanonicalPath(), manager.newPath(result));
-                    //copy(secondNext.getCanonicalPath(), manager.newPath(result));
+                        result = FileService.getDirectoryManager().create(result);
                     copy(firstNext.getCanonicalPath(), NewFilenameManager.newPath(firstNext, result));
                     copy(secondNext.getCanonicalPath(), NewFilenameManager.newPath(secondNext, result));
-
                 }
             }
             else {
@@ -90,8 +86,6 @@ public class PlainFileManager extends FileManager {
 
     @Override
     public synchronized void copy(File source, File target) throws IOException {
-        //String newPath = new NewFilenameManager(file.getName()).newPath(directory);
-        //File target = create(newPath);
         FileUtils.copyFile(source, target);
     }
 
@@ -99,8 +93,6 @@ public class PlainFileManager extends FileManager {
     public synchronized void copy(String pathSource, String pathToTarget) throws IOException {
         File source = get(pathSource);
         File target = create(pathToTarget);
-        //does it create path to directory that does not exist yet?
         copy(source, target);
-        //FileUtils.copyFile(source, target);
     }
 }

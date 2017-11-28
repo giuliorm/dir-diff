@@ -1,5 +1,7 @@
 package ru.juriasan.util;
 
+import ru.juriasan.services.FileService;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -58,7 +60,7 @@ public class NewFilenameManager implements FilenameFilter {
             throw new IOException("Filename cannot be null or empty!");
 
         String newName = Paths.get(result.getCanonicalPath(), sourceName).toString();
-        File[] filter = FileManager.getDirectoryManager().getFiles(result, this);
+        File[] filter = FileService.getDirectoryManager().getFiles(result, this);
         if (filter.length > 0) {
             Arrays.sort(filter, Comparator.comparing(File::getName));
             String newShortName = newName(filter[filter.length - 1].getName());

@@ -1,4 +1,4 @@
-package ru.juriasan.util;
+package ru.juriasan.services;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 
 
-public abstract  class FileManager {
+public abstract  class FileService {
 
     protected static final String CANNOT_SET_READABLE = "Cannot set file %s as readable. Possibly, user doesn't have" +
             "enough permissions.";
@@ -23,24 +23,24 @@ public abstract  class FileManager {
     protected static final String FILE_IS_NOT_EXECUTABLE = "File %s is not executable.";
     protected static final String CANNOT_OBTAIN_LIST_OF_FILES = "Cannot obtain the list of files from file %s.";
 
-    private volatile static DirectoryManager directoryManager;
-    private volatile static PlainFileManager plainFileManager;
+    private volatile static DirectoryService directoryManager;
+    private volatile static PlainFileService plainFileManager;
 
-    public static DirectoryManager getDirectoryManager() {
+    public static DirectoryService getDirectoryManager() {
         if (directoryManager == null) {
-            synchronized (FileManager.class) {
+            synchronized (FileService.class) {
                 if (directoryManager == null)
-                    directoryManager = new DirectoryManager();
+                    directoryManager = new DirectoryService();
             }
         }
         return directoryManager;
     }
 
-    public static FileManager getPlainFileManager() {
+    public static FileService getPlainFileManager() {
         if (plainFileManager == null) {
-            synchronized (FileManager.class) {
+            synchronized (FileService.class) {
                 if (plainFileManager == null)
-                    plainFileManager = new PlainFileManager();
+                    plainFileManager = new PlainFileService();
             }
         }
         return plainFileManager;

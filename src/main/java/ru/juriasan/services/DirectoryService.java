@@ -1,11 +1,13 @@
-package ru.juriasan.util;
+package ru.juriasan.services;
+
+import ru.juriasan.util.NewFilenameManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 
-public class DirectoryManager extends FileManager {
+public class DirectoryService extends FileService {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create new directory with name %s";
 
@@ -63,7 +65,7 @@ public class DirectoryManager extends FileManager {
             else secondPlainFiles.add(file);
 
         boolean isThereADiff = diff(firstDirectories, secondDirectories, result);
-        isThereADiff |= FileManager.getPlainFileManager().diff(firstPlainFiles, secondPlainFiles, result);
+        isThereADiff |= FileService.getPlainFileManager().diff(firstPlainFiles, secondPlainFiles, result);
         return isThereADiff;
     }
 
@@ -103,7 +105,7 @@ public class DirectoryManager extends FileManager {
         if (sourceFiles == null)
             throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, source.getCanonicalPath()));
         for (File file : sourceFiles) {
-            FileManager.getPlainFileManager().copy(file.getCanonicalPath(), NewFilenameManager.newPath(file, target));
+            FileService.getPlainFileManager().copy(file.getCanonicalPath(), NewFilenameManager.newPath(file, target));
         }
     }
 
