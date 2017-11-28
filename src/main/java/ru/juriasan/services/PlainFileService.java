@@ -1,6 +1,7 @@
 package ru.juriasan.services;
 
 import org.apache.commons.io.FileUtils;
+import ru.juriasan.threading.LoadBalancer;
 import ru.juriasan.util.NewFilenameManager;
 
 import java.io.*;
@@ -12,6 +13,7 @@ import java.util.Set;
 public class PlainFileService extends FileService {
 
     private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
+    public LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
     protected PlainFileService () {
 
