@@ -1,5 +1,7 @@
 package ru.juriasan.services;
 
+import ru.juriasan.threading.LoadBalancer;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -25,6 +27,7 @@ public abstract  class FileService {
 
     private volatile static DirectoryService directoryManager;
     private volatile static PlainFileService plainFileManager;
+    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
     public static DirectoryService getDirectoryManager() {
         if (directoryManager == null) {
