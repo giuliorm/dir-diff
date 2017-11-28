@@ -27,6 +27,7 @@ public abstract  class FileService {
 
     private volatile static DirectoryService directoryManager;
     private volatile static PlainFileService plainFileManager;
+    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
     protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
