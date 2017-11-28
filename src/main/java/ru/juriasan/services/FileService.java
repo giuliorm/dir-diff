@@ -102,5 +102,4 @@ public abstract  class FileService {
         if (!file.exists())
             throw new FileAlreadyExistsException(String.format(FILE_DOES_NOT_EXISTS, file.getCanonicalPath()));
     }
-
 }
