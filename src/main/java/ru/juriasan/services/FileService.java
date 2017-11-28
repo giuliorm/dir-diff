@@ -29,10 +29,6 @@ public abstract  class FileService {
     private volatile static PlainFileService plainFileManager;
     protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
-    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
-
-    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
-
     public static DirectoryService getDirectoryManager() {
         if (directoryManager == null) {
             synchronized (FileService.class) {
