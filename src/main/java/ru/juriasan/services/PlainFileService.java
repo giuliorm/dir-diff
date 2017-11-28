@@ -13,6 +13,7 @@ import java.util.Set;
 public class PlainFileService extends FileService {
 
     private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
+    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
     protected PlainFileService () {
 
