@@ -12,6 +12,10 @@ public class PlainFileManager extends FileManager {
 
     private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
 
+    protected PlainFileManager () {
+
+    }
+
     @Override
     public File create(String path) throws IOException {
         File file = new File(path);
@@ -89,14 +93,26 @@ public class PlainFileManager extends FileManager {
     }
 
     @Override
-    public synchronized void copy(File source, File target) throws IOException {
+    public void copy(File source, File target) throws IOException {
         //String newPath = new NewFilenameManager(file.getName()).newPath(directory);
         //File target = create(newPath);
-        FileUtils.copyFile(source, target);
+        loadBalancer.submit(() -> {
+            String first = source.getName();
+            String second = source.getName();
+            try {
+                first = source.getCanonicalPath();
+                second = target.getCanonicalPath();
+                FileUtils.copyFile(source, target);
+            }
+            catch (IOException ex) {
+                System.out.println(String.format("Cannot copy contents from %s to %s", first, second));
+                ex.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public synchronized void copy(String pathSource, String pathToTarget) throws IOException {
+    public void copy(String pathSource, String pathToTarget) throws IOException {
         File source = get(pathSource);
         File target = create(pathToTarget);
         //does it create path to directory that does not exist yet?

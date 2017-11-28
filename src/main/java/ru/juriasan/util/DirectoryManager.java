@@ -9,6 +9,10 @@ public class DirectoryManager extends FileManager {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create new directory with name %s";
 
+    protected DirectoryManager() {
+
+    }
+
     @Override
     public synchronized File create(String path) throws IOException {
         File file = new File(path);

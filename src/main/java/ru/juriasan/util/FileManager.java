@@ -1,5 +1,7 @@
 package ru.juriasan.util;
 
+import ru.juriasan.threading.LoadBalancer;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -25,6 +27,8 @@ public abstract  class FileManager {
 
     private volatile static DirectoryManager directoryManager;
     private volatile static PlainFileManager plainFileManager;
+
+    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
     public static DirectoryManager getDirectoryManager() {
         if (directoryManager == null) {
