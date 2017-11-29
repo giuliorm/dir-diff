@@ -16,12 +16,13 @@
             <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-            <version>0.9.8</version>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.11</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
+    <!-- https://mvnrepository.com/artifact/org.testng/testng -->
     <build>
         <plugins>
             <plugin>
