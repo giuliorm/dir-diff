@@ -23,21 +23,33 @@ public abstract class Test {
         this.rootPath = rootPath;
         this.firstDirectoryPath = Paths.get(rootPath, "dir1").toString();
         this.secondDirectoryPath = Paths.get(rootPath, "dir2").toString();
-        this.resultDirectoryPath = Paths.get(rootPath, "dir3").toString();
+        this.resultDirectoryPath = Paths.get(rootPath, "testResult").toString();
     }
 
     protected static final String RESOURCES_PATH = Paths
             .get("src", "main", "test", "resources").toString();
 
-    public abstract void generateData() throws IOException;
+    public void generateData() throws IOException {
+        firstDirectory = FileService.getDirectoryManager().create(firstDirectoryPath);
+        secondDirectory = FileService.getDirectoryManager().create(secondDirectoryPath);
+        resultDirectory = FileService.getDirectoryManager().create(resultDirectoryPath);
+    }
+
     public abstract void checkResults() throws IOException;
 
     @org.testng.annotations.Test
     public void run()  throws IOException {
         cleanData();
         generateData();
+        if (firstDirectory == null)
+            throw new RuntimeException("First directory cannot be null!");
+        if (secondDirectory == null)
+            throw new RuntimeException("Second directory cannot be null!");
+        if (resultDirectory == null)
+            throw new RuntimeException("Result directory cannot be null!");
         FileService.getDirectoryManager().diff(firstDirectory, secondDirectory, resultDirectory);
         checkResults();
+        cleanData();
     }
 
     private void removeAllFiles(String directoryPath, File directory) throws IOException {
