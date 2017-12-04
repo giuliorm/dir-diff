@@ -1,6 +1,7 @@
 package ru.juriasan.dirdiff.test;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.juriasan.services.FileService;
 
@@ -44,6 +45,17 @@ public class ManyDirectoriesTest extends BaseTest {
 
     @Override
     public void checkData() throws IOException {
+        if (resultDirectory == null || !resultDirectory.isDirectory())
+            Assert.fail();
 
+        File[] files = resultDirectory.listFiles();
+        if (files == null || files.length != directoriesCount)
+            Assert.fail();
+
+        for (int i = 0; i < directoriesCount; i++) {
+            File current = files[i];
+            FileService.assertExists(current);
+            FileService.assertDirectory(current);
+        }
     }
 }

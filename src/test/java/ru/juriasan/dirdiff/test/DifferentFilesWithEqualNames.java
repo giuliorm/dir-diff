@@ -23,8 +23,10 @@ public class DifferentFilesWithEqualNames  extends BaseTest {
 
     @Override
     public void generateData() throws IOException {
-        firstFile = FileService.getPlainFileManager().create(Paths.get(rootDirectoryPath, "file1").toString());
-        secondFile = FileService.getPlainFileManager().create(Paths.get(rootDirectoryPath, "file1").toString());
+        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.getCanonicalPath(),
+                "file1").toString());
+        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.getCanonicalPath(),
+                "file1").toString());
         try(FileWriter w = new FileWriter(secondFile)) {
             w.write("HW!");
         }
@@ -42,10 +44,18 @@ public class DifferentFilesWithEqualNames  extends BaseTest {
         File firstFile = result[0];
         File secondFile = result [1];
         String firstName = firstFile.getName();
-        String secondName = firstFile.getName();
-        if (new NewFilenameManager(firstName).getFileNumber(firstName) <= 0 && new NewFilenameManager(secondName)
-                .getFileNumber(firstName) <= 0)
-            Assert.fail();
+        String secondName = secondFile.getName();
+        NewFilenameManager firstNameManager = new NewFilenameManager(firstName);
+        NewFilenameManager secondNameManager = new NewFilenameManager(secondName);
+
+        if (firstNameManager.matchesStrictNumberForm(firstName))
+            if (secondNameManager.matchesStrictNumberForm(secondName) ||
+                    !secondNameManager.matchesNonStrictNumberForm(secondName))
+                Assert.fail();
+        else if (!firstNameManager.matchesNonStrictNumberForm(firstName) ||
+                    !secondNameManager.matchesStrictNumberForm(secondName))
+                Assert.fail();
+
         if (!FileUtils.contentEquals(firstFile, this.firstFile) || !FileUtils.contentEquals(secondFile,
                 this.secondFile))
             Assert.fail();

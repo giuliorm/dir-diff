@@ -27,6 +27,14 @@ public class NewFilenameManager implements FilenameFilter {
         this.namePatternStrict = Pattern.compile(String.format(NUMBER_FORM_STRICT, name));
     }
 
+    public boolean matchesStrictNumberForm(String name) {
+        return namePatternStrict.matcher(name).matches();
+    }
+
+    public boolean matchesNonStrictNumberForm(String name) {
+        return accept(null, name);
+    }
+
     public int getFileNumber(String name) {
         Matcher m = namePatternStrict.matcher(name);
         int number = 0;
