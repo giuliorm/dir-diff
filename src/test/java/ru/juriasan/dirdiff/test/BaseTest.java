@@ -14,11 +14,13 @@ import java.util.Iterator;
 public abstract  class BaseTest {
 
     String rootDirectoryPath;
+    String name;
     File firstDirectory;
     File secondDirectory;
     File resultDirectory;
 
-    public BaseTest(String rootDirectoryPath)  {
+    public BaseTest(String name, String rootDirectoryPath)  {
+        this.name = name;
         this.rootDirectoryPath = rootDirectoryPath;
     }
 

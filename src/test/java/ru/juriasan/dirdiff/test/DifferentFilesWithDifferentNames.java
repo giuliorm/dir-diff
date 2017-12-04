@@ -13,10 +13,11 @@ public class DifferentFilesWithDifferentNames extends BaseTest {
 
     File firstFile;
     File secondFile;
+    private static final String NAME = "Different Files with Different Names";
     private static final int FILE_COUNT = 2;
 
     public DifferentFilesWithDifferentNames(String rootPath) {
-        super(rootPath);
+        super(NAME, rootPath);
     }
 
     @Override

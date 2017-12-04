@@ -14,10 +14,11 @@ public class DifferentFilesWithEqualNames  extends BaseTest {
 
     File firstFile;
     File secondFile;
+    private static final String NAME = "Different Files With Equal Names";
     private static final int FILE_COUNT = 2;
 
     public DifferentFilesWithEqualNames(String rootPath)  {
-        super(rootPath);
+        super(NAME, rootPath);
     }
 
     @Override
