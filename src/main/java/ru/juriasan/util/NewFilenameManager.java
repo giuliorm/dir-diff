@@ -27,7 +27,7 @@ public class NewFilenameManager implements FilenameFilter {
         this.namePatternStrict = Pattern.compile(String.format(NUMBER_FORM_STRICT, name));
     }
 
-    private int getFileNumber(String name) {
+    public int getFileNumber(String name) {
         Matcher m = namePatternStrict.matcher(name);
         int number = 0;
         if (m.matches()) {
