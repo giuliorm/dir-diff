@@ -29,7 +29,7 @@ public class Tests {
         new EqualFilesWithDifferentNamesTest(RESOURCES_PATH).run();
     }
 
-    @Test
+    @Ignore
     public void manyDirectoriesTest()  {
         new ManyDirectoriesTest(500, RESOURCES_PATH).run();
     }
