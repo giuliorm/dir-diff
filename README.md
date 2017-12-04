@@ -9,7 +9,7 @@ This repo has two main working branches:
 difference in the third directory.
 
 **multithreaded** branch contains a simple thread pool implementation in order to
-make copying of the files faster. It actually works, (43,... milliseconds on 
-single-threaded version agains the 25,... milliseconds on multithreaded version on
+make copying of the files faster. It actually works (a bit), (39,... milliseconds on 
+single-threaded version against the 34,... milliseconds on multithreaded version on
 500 directories in each _first_ and _second_ directories, resulting into the 500
 directories in the _result_ dir).
