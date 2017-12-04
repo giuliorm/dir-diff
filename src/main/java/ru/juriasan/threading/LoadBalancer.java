@@ -25,10 +25,6 @@ public class LoadBalancer {
     private LoadBalancer(int n) {
         this.pool = Executors.newFixedThreadPool(n > MAXIMUM_POOL_SIZE ? MAXIMUM_POOL_SIZE :
                 n < MINIMUM_POOL_SIZE ? MINIMUM_POOL_SIZE : n);
-        /*queue = new LinkedBlockingDeque<>();
-        pool = new ThreadPoolExecutor(n, MAXIMUM_POOL_SIZE, KEEP_ALIVE,
-                TimeUnit.SECONDS, queue,
-                new ThreadPoolExecutor.CallerRunsPolicy());*/
     }
 
     public void submit(Runnable task) {

@@ -91,8 +91,6 @@ public class PlainFileService extends FileService {
 
     @Override
     public void copy(File source, File target) throws IOException {
-        //String newPath = new NewFilenameManager(file.getName()).newPath(directory);
-        //File target = create(newPath);
         loadBalancer.submit(() -> {
             String first = source.getName();
             String second = source.getName();
