@@ -1,5 +1,6 @@
 package ru.juriasan.services;
 
+import ru.juriasan.threading.LoadBalancer;
 import ru.juriasan.util.NewFilenameManager;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.*;
 public class DirectoryService extends FileService {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create new directory with name %s";
+    protected LoadBalancer loadBalancer = LoadBalancer.getInstance(LoadBalancer.MAXIMUM_POOL_SIZE);
 
     protected DirectoryService() {
 
@@ -77,22 +79,34 @@ public class DirectoryService extends FileService {
     public boolean diff(Set<File> first, Set<File> second, File result) throws IOException {
         Iterator<File> firstDirectories = first.stream().sorted(Comparator.comparing(File::getName)).iterator();
         Iterator<File> secondDirectories = second.stream().sorted(Comparator.comparing(File::getName)).iterator();
-        boolean isThereDiff = false;
-        while(firstDirectories.hasNext() || secondDirectories.hasNext()) {
-            File firstNext = firstDirectories.hasNext() ? firstDirectories.next() : null;
-            File secondNext = secondDirectories.hasNext() ? secondDirectories.next() : null;
-            if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
-                File newDirectory = new File(NewFilenameManager.newPath(firstNext, result));
-                isThereDiff |= diff(firstNext, secondNext, newDirectory);
-            } else {
-                isThereDiff |= true;
-                if (firstNext != null)
-                    copy(firstNext, result);
-                if (secondNext != null)
-                    copy(secondNext, result);
-            }
+        boolean isThereDiffOuter = false;
+        try {
+            isThereDiffOuter = loadBalancer.submit(() -> {
+                boolean isThereDiff = false;
+                while (firstDirectories.hasNext() || secondDirectories.hasNext()) {
+                    File firstNext = firstDirectories.hasNext() ? firstDirectories.next() : null;
+                    File secondNext = secondDirectories.hasNext() ? secondDirectories.next() : null;
+                    if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
+                        File newDirectory = new File(NewFilenameManager.newPath(firstNext, result));
+                        isThereDiff |= diff(firstNext, secondNext, newDirectory);
+                    } else {
+                        isThereDiff |= true;
+                        if (firstNext != null)
+                            copy(firstNext, result);
+                        if (secondNext != null)
+                            copy(secondNext, result);
+                    }
+                }
+                return isThereDiff;
+            });
         }
-        return isThereDiff;
+        catch (IOException ioException) {
+            throw ioException;
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return isThereDiffOuter;
     }
 
     @Override

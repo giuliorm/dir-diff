@@ -30,4 +30,9 @@ public class LoadBalancer {
     public void submit(Runnable task) {
         this.pool.submit(task);
     }
+
+    public boolean submit(Callable<Boolean> task) throws Exception {
+         Future<Boolean> result = this.pool.submit(task);
+         return result.get();
+    }
 }

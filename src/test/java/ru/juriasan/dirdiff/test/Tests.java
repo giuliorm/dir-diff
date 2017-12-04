@@ -31,6 +31,6 @@ public class Tests {
 
     @Test
     public void manyDirectoriesTest()  {
-        new ManyDirectoriesTest(1000, RESOURCES_PATH).run();
+        new ManyDirectoriesTest(500, RESOURCES_PATH).run();
     }
 }
