@@ -6,7 +6,7 @@
 
     <groupId>ru.juriasan</groupId>
     <artifactId>dir-diff</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
     <dependencies>
