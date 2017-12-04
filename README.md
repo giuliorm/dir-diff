@@ -13,3 +13,11 @@ make copying of the files faster. It actually works (a bit), (39,... millisecond
 single-threaded version against the 34,... milliseconds on multithreaded version on
 500 directories in each _first_ and _second_ directories, resulting into the 500
 directories in the _result_ dir).
+
+# build
+
+`mvn clean install` or `mvn clean package`
+
+taking  `dirdiff-1.0.0-shaded.jar`
+
+
