@@ -1,5 +1,6 @@
 package ru.juriasan.dirdiff.test;
 
+import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.juriasan.services.FileService;
@@ -14,11 +15,13 @@ import java.util.Iterator;
 public abstract  class BaseTest {
 
     String rootDirectoryPath;
+    String name;
     File firstDirectory;
     File secondDirectory;
     File resultDirectory;
 
-    public BaseTest(String rootDirectoryPath)  {
+    public BaseTest(String name, String rootDirectoryPath)  {
+        this.name = name;
         this.rootDirectoryPath = rootDirectoryPath;
     }
 
@@ -77,17 +80,40 @@ public abstract  class BaseTest {
     }
  */
     public void run() {
+        Throwable ex = null;
         try {
             clean(rootDirectoryPath);
             createRoots();
             generateData();
+            double startTime = System.currentTimeMillis();
             FileService.getDirectoryManager().diff(firstDirectory, secondDirectory, resultDirectory);
+            double delay = System.currentTimeMillis() - startTime;
+            System.out.println(String.format("Time elapsed %f", delay));
+            checkData();
         }
         catch (Throwable e) {
             e.printStackTrace();
+            ex = e;
         }
         finally {
             clean(rootDirectoryPath);
+            if (ex != null)
+                Assert.fail();
         }
+    }
+
+    public void checkDifferentFiles(File first, File second) throws IOException {
+        final int fileCount = 2;
+        if (resultDirectory == null)
+            Assert.fail();
+        File[] result = resultDirectory.listFiles();
+        if (result == null)
+            throw new RuntimeException();
+        if (result.length != fileCount)
+            Assert.fail();
+        File firstFile = result[0];
+        File secondFile = result [1];
+        if (!FileUtils.contentEquals(firstFile, first) || !FileUtils.contentEquals(secondFile, second))
+            Assert.fail();
     }
 }

@@ -1,8 +1,8 @@
 package ru.juriasan.dirdiff.test;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 public class Tests {
@@ -11,7 +11,7 @@ public class Tests {
 
     @Test
     public void differentFilesWithDifferentNamesTest() {
-        new DifferentFilesWithDifferentNames(RESOURCES_PATH).run();
+        new DifferentFilesWithDifferentNamesTest(RESOURCES_PATH).run();
     }
 
     @Test
@@ -20,7 +20,17 @@ public class Tests {
     }
 
     @Test
+    public void equalFilesWithEqualNamesTest() {
+        new EqualFilesWithEqualNamesTest(RESOURCES_PATH).run();
+    }
+
+    @Test
+    public void equalFilesWithDifferentNamesTest() {
+        new EqualFilesWithDifferentNamesTest(RESOURCES_PATH).run();
+    }
+
+    @Test
     public void manyDirectoriesTest()  {
-        new ManyDirectoriesTest(RESOURCES_PATH).run();
+        new ManyDirectoriesTest(1000, RESOURCES_PATH).run();
     }
 }
