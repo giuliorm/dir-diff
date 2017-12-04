@@ -11,7 +11,7 @@ public class DirectoryService extends FileService {
 
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create new directory with name %s";
 
-    protected DirectoryManager() {
+    protected DirectoryService() {
 
     }
 
