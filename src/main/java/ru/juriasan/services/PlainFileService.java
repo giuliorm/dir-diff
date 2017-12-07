@@ -1,10 +1,11 @@
 package ru.juriasan.services;
 
-import org.apache.commons.io.FileUtils;
 import ru.juriasan.util.NewFilenameManager;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
@@ -14,28 +15,25 @@ public class PlainFileService extends FileService {
     private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
 
     @Override
-    public File create(String path) throws IOException {
-        File file = new File(path);
-        if (!file.createNewFile())
-            throw new IOException(String.format(CANNOT_CREATE_FILE, path));
+    public synchronized Path create(String path) throws IOException {
+        //File file = new File(Files.createFile(Paths.get(path)).toString());
+        Path file = Files.createFile(Paths.get(path));
         setReadableAndAssert(file);
         setWriteableAndAssert(file);
         return file;
     }
 
     @Override
-    public File get(String path) throws IOException {
-        File file = new File(path);
+    public Path get(String path) throws IOException {
+        Path file = Paths.get(path);
         assertExists(file);
         assertReadable(file);
         return file;
     }
 
     @Override
-    public boolean diff(File first, File second, File result) throws IOException {
-        if (first == null || second == null)
-            throw new NullPointerException("Compare arguments cannot be null.");
-        return !FileUtils.contentEquals(first, second);
+    public boolean diff(Path first, Path second, Path result) throws IOException {
+        return first == null || second == null || !contentEquals(first, second);
     }
 
     @Override
@@ -44,55 +42,42 @@ public class PlainFileService extends FileService {
     }
 
     @Override
-    public boolean diff(Set<File> first, Set<File> second, File result) throws IOException {
-        Iterator<File> firstFiles = first.stream().sorted(Comparator.comparing(File::getName)).iterator();
-        Iterator<File> secondFiles = second.stream().sorted(Comparator.comparing(File::getName)).iterator();
+    public boolean diff(Set<Path> first, Set<Path> second, Path result) throws IOException {
+        Iterator<Path> firstFiles = first.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
+        Iterator<Path> secondFiles = second.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
         boolean isThereADiff = false;
         while(firstFiles.hasNext() || secondFiles.hasNext()) {
-            File firstNext = firstFiles.hasNext() ? firstFiles.next() : null;
-            File secondNext = secondFiles.hasNext() ? secondFiles.next() : null;
+            Path firstNext = firstFiles.hasNext() ? firstFiles.next() : null;
+            Path secondNext = secondFiles.hasNext() ? secondFiles.next() : null;
             if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
                 if (diff(firstNext, secondNext, result)) {
                     isThereADiff |= true;
-                    if (!result.exists())
+                    if (!Files.exists(result))
                         result = FileService.getDirectoryManager().create(result);
-                    copy(firstNext.getCanonicalPath(), NewFilenameManager.newPath(firstNext, result));
-                    copy(secondNext.getCanonicalPath(), NewFilenameManager.newPath(secondNext, result));
+                    copy(firstNext.toRealPath(), NewFilenameManager.newPath(firstNext, result));
+                    copy(secondNext.toRealPath(), NewFilenameManager.newPath(secondNext, result));
                 }
             }
             else {
                 isThereADiff |= true;
                 if (firstNext != null)
-                    copy(firstNext.getCanonicalPath(), NewFilenameManager.newPath(firstNext, result));
+                    copy(firstNext.toRealPath(), NewFilenameManager.newPath(firstNext, result));
                 if (secondNext != null)
-                    copy(secondNext.getCanonicalPath(), NewFilenameManager.newPath(secondNext, result));
+                    copy(secondNext.toRealPath(), NewFilenameManager.newPath(secondNext, result));
             }
         }
         return isThereADiff;
     }
-    /**
-     * Reads all data from file into memory.
-     * @param file
-     * @return
-     * @throws IOException
-     */
-    public String readFile(File file) throws IOException {
-        if (file == null)
-            return null;
-        final StringBuilder data  = new StringBuilder();
-        Files.lines(file.toPath()).forEach(line -> data.append(line));
-        return data.toString();
-    }
 
     @Override
-    public synchronized void copy(File source, File target) throws IOException {
-        FileUtils.copyFile(source, target);
+    public synchronized void copy(Path source, Path target) throws IOException {
+        copyFile(source, target);
     }
 
     @Override
     public synchronized void copy(String pathSource, String pathToTarget) throws IOException {
-        File source = get(pathSource);
-        File target = create(pathToTarget);
+        Path source = get(pathSource);
+        Path target = create(pathToTarget);
         copy(source, target);
     }
 }

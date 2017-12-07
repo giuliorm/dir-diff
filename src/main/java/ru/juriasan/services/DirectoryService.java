@@ -2,9 +2,11 @@ package ru.juriasan.services;
 
 import ru.juriasan.util.NewFilenameManager;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class DirectoryService extends FileService {
@@ -12,23 +14,24 @@ public class DirectoryService extends FileService {
     private static final String CANNOT_CREATE_DIRECTORY = "Cannot create new directory with name %s";
 
     @Override
-    public synchronized File create(String path) throws IOException {
-        File file = new File(path);
+    public synchronized Path create(String path) throws IOException {
+        Path file = Paths.get(path);
         return create(file);
     }
 
-    public synchronized File create(File file) throws IOException {
-        assertNotExists(file);
-        if (!file.mkdir())
-            throw new IOException(String.format(CANNOT_CREATE_DIRECTORY, file.getCanonicalPath()));
+    public synchronized Path create(Path file) throws IOException {
+        Files.createDirectory(file);
+        //assertNotExists(file);
+        //if (!file.mkdir())
+        //    throw new IOException(String.format(CANNOT_CREATE_DIRECTORY, file.getCanonicalPath()));
         setReadableAndAssert(file);
         setExecutableAndAssert(file);
         return file;
     }
 
     @Override
-    public File get(String path) throws IOException {
-        File file = new File(path);
+    public Path get(String path) throws IOException {
+        Path file =Paths.get(path);
         assertExists(file);
         assertDirectory(file);
         assertReadable(file);
@@ -43,24 +46,24 @@ public class DirectoryService extends FileService {
     }
 
     @Override
-    public boolean diff(File first, File second, File result) throws IOException {
+    public boolean diff(Path first, Path second, Path result) throws IOException {
         if (first == null || second == null || result == null)
             throw new NullPointerException("Diff arguments cannot be null");
-        File[] firstFiles = getFiles(first, null);
-        File[] secondFiles = getFiles(second, null);
+        Iterable<Path> firstFiles = getFiles(first, null);
+        Iterable<Path> secondFiles = getFiles(second, null);
 
-        Set<File> firstDirectories = new HashSet<>();
-        Set<File> secondDirectories = new HashSet<>();
-        Set<File> firstPlainFiles = new HashSet<>();
-        Set<File> secondPlainFiles = new HashSet<>();
+        Set<Path> firstDirectories = new HashSet<>();
+        Set<Path> secondDirectories = new HashSet<>();
+        Set<Path> firstPlainFiles = new HashSet<>();
+        Set<Path> secondPlainFiles = new HashSet<>();
 
-        for(File file : firstFiles)
-            if (file.isDirectory())
+        for(Path file : firstFiles)
+            if (Files.isDirectory(file))
                 firstDirectories.add(file);
             else firstPlainFiles.add(file);
 
-        for(File file : secondFiles)
-            if (file.isDirectory())
+        for(Path file : secondFiles)
+            if (Files.isDirectory(file))
                 secondDirectories.add(file);
             else secondPlainFiles.add(file);
 
@@ -70,15 +73,15 @@ public class DirectoryService extends FileService {
     }
 
     @Override
-    public boolean diff(Set<File> first, Set<File> second, File result) throws IOException {
-        Iterator<File> firstDirectories = first.stream().sorted(Comparator.comparing(File::getName)).iterator();
-        Iterator<File> secondDirectories = second.stream().sorted(Comparator.comparing(File::getName)).iterator();
+    public boolean diff(Set<Path> first, Set<Path> second, Path result) throws IOException {
+        Iterator<Path> firstDirectories = first.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
+        Iterator<Path> secondDirectories = second.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
         boolean isThereDiff = false;
         while(firstDirectories.hasNext() || secondDirectories.hasNext()) {
-            File firstNext = firstDirectories.hasNext() ? firstDirectories.next() : null;
-            File secondNext = secondDirectories.hasNext() ? secondDirectories.next() : null;
+            Path firstNext = firstDirectories.hasNext() ? firstDirectories.next() : null;
+            Path secondNext = secondDirectories.hasNext() ? secondDirectories.next() : null;
             if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
-                File newDirectory = new File(NewFilenameManager.newPath(firstNext, result));
+                Path newDirectory = Paths.get(NewFilenameManager.newPath(firstNext, result));
                 isThereDiff |= diff(firstNext, secondNext, newDirectory);
             } else {
                 isThereDiff |= true;
@@ -93,28 +96,34 @@ public class DirectoryService extends FileService {
 
     @Override
     public void copy(String pathSource, String pathTarget) throws IOException {
-        File source = get(pathSource);
-        File target = get(pathTarget);
+        Path source = get(pathSource);
+        Path target = get(pathTarget);
         copy(source, target);
     }
 
     @Override
-    public void copy(File source, File targetDirectory) throws IOException {
-        File[] sourceFiles = getFiles(source, null);
-        File target = create(NewFilenameManager.newPath(source, targetDirectory));
+    public void copy(Path source, Path targetDirectory) throws IOException {
+        Iterable<Path> sourceFiles = getFiles(source, null);
+        Path target = create(NewFilenameManager.newPath(source, targetDirectory));
         if (sourceFiles == null)
-            throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, source.getCanonicalPath()));
-        for (File file : sourceFiles) {
-            FileService.getPlainFileManager().copy(file.getCanonicalPath(), NewFilenameManager.newPath(file, target));
+            throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, source.toRealPath()));
+        for (Path file : sourceFiles) {
+            FileService.getPlainFileManager().copy(file.toRealPath(), NewFilenameManager.newPath(file, target));
         }
     }
 
-    public File[] getFiles(String path, FilenameFilter filter) throws IOException {
-        File file = get(path);
+    public Iterable<Path> getFiles(String path, DirectoryStream.Filter filter) throws IOException {
+        Path file = get(path);
         return getFiles(file, filter);
     }
 
-    public File[] getFiles(File file, FilenameFilter filter) throws IOException {
-        return filter == null ? file.listFiles() : file.listFiles(filter);
+    public Iterable<Path> getFiles(Path file, DirectoryStream.Filter filter) throws IOException {
+        List<Path> files = new ArrayList<>();
+        for (Path f : Files.newDirectoryStream(file)) {
+            if (filter != null && filter.accept(f))
+                files.add(f);
+        }
+        return files;
+        //return filter == null ? file.iterator().listFiles() : file.listFiles(filter);
     }
 }
