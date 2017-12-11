@@ -1,31 +1,29 @@
 package ru.juriasan.util;
 
 import ru.juriasan.services.FileService;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-public class NewFilenameManager implements DirectoryStream.Filter {
+public class NewFilenameManager implements DirectoryStream.Filter<Path> {
 
     private final Pattern namePatternNotStrict;
     private final Pattern namePatternStrict;
     private static final String NAME = "%s (%d)";
     private static final String NUMBER_FORM_NOT_STRICT = "%s[ ]?(\\([1-9]*\\))?";
-    private static final String NUMBER_FORM_STRICT = "%s[ ]{1}(\\([1-9]+\\))";
+    private static final String NUMBER_FORM_STRICT = "%s[ ]{1}(\\([1-9]+[0]*\\))";
     private String sourceName;
 
-    public NewFilenameManager(String name) {
-        this.sourceName = name;
-        final String initialPattern = String.format(NUMBER_FORM_NOT_STRICT, name);
-        this.namePatternNotStrict = Pattern.compile(initialPattern);
-        this.namePatternStrict = Pattern.compile(String.format(NUMBER_FORM_STRICT, name));
+    public NewFilenameManager(String sourceName) {
+        this.namePatternNotStrict = Pattern.compile(String.format(NUMBER_FORM_NOT_STRICT, sourceName));
+        this.namePatternStrict = Pattern.compile(String.format(NUMBER_FORM_STRICT, sourceName));
+        this.sourceName = sourceName;
     }
 
     public boolean matchesStrictNumberForm(String name) {
@@ -33,7 +31,7 @@ public class NewFilenameManager implements DirectoryStream.Filter {
     }
 
     public boolean matchesNonStrictNumberForm(String name) {
-        return accept(null, name);
+        return namePatternNotStrict.matcher(name).matches();
     }
 
     public int getFileNumber(String name) {
@@ -56,8 +54,8 @@ public class NewFilenameManager implements DirectoryStream.Filter {
     }
 
     @Override
-    public boolean accept(Path dir, String name) {
-        return namePatternNotStrict.matcher(name).matches();
+    public boolean accept(Path file) throws IOException {
+        return namePatternNotStrict.matcher(file.getFileName().toString()).matches();
     }
 
     public static synchronized String newPath(Path source, Path targetDirectory) throws IOException {
@@ -68,12 +66,12 @@ public class NewFilenameManager implements DirectoryStream.Filter {
         if (sourceName == null || sourceName.equals(""))
             throw new IOException("Filename cannot be null or empty!");
 
-        String newName = Paths.get(result.toRealPath(), sourceName).toString();
-        Iterable<Path> filter = FileService.getDirectoryManager().getFiles(result, this);
-        if (filter.length > 0) {
-            Arrays.sort(filter, Comparator.comparing(File::getName));
-            String newShortName = newName(filter[filter.length - 1].getName());
-            newName = Paths.get(result.getCanonicalPath(), newShortName).toString();
+        String newName = Paths.get(result.toRealPath().toString(), sourceName).toString();
+        List<Path> filter = FileService.getDirectoryManager().getFilesFiltered(result, this)
+                .stream().sorted(Comparator.comparing(Path::getFileName)).collect(Collectors.toList());
+        if (filter.size() > 0) {
+            String newShortName = newName(filter.get(filter.size() - 1).getFileName().toString());
+            newName = Paths.get(result.toRealPath().toString(), newShortName).toString();
         }
         return newName;
     }

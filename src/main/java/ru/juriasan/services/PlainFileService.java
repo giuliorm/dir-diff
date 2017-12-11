@@ -2,7 +2,7 @@ package ru.juriasan.services;
 
 import ru.juriasan.util.NewFilenameManager;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,11 +12,8 @@ import java.util.Set;
 
 public class PlainFileService extends FileService {
 
-    private static final String CANNOT_CREATE_FILE = "Cannot create new file with name %s";
-
     @Override
     public synchronized Path create(String path) throws IOException {
-        //File file = new File(Files.createFile(Paths.get(path)).toString());
         Path file = Files.createFile(Paths.get(path));
         setReadableAndAssert(file);
         setWriteableAndAssert(file);
@@ -54,16 +51,16 @@ public class PlainFileService extends FileService {
                     isThereADiff |= true;
                     if (!Files.exists(result))
                         result = FileService.getDirectoryManager().create(result);
-                    copy(firstNext.toRealPath(), NewFilenameManager.newPath(firstNext, result));
-                    copy(secondNext.toRealPath(), NewFilenameManager.newPath(secondNext, result));
+                    copy(firstNext.toRealPath().toString(), NewFilenameManager.newPath(firstNext, result));
+                    copy(secondNext.toRealPath().toString(), NewFilenameManager.newPath(secondNext, result));
                 }
             }
             else {
                 isThereADiff |= true;
                 if (firstNext != null)
-                    copy(firstNext.toRealPath(), NewFilenameManager.newPath(firstNext, result));
+                    copy(firstNext.toRealPath().toString(), NewFilenameManager.newPath(firstNext, result));
                 if (secondNext != null)
-                    copy(secondNext.toRealPath(), NewFilenameManager.newPath(secondNext, result));
+                    copy(secondNext.toRealPath().toString(), NewFilenameManager.newPath(secondNext, result));
             }
         }
         return isThereADiff;
@@ -75,9 +72,9 @@ public class PlainFileService extends FileService {
     }
 
     @Override
-    public synchronized void copy(String pathSource, String pathToTarget) throws IOException {
+    public synchronized void copy(String pathSource, String pathTarget) throws IOException {
         Path source = get(pathSource);
-        Path target = create(pathToTarget);
+        Path target = Paths.get(pathTarget);
         copy(source, target);
     }
 }

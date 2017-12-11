@@ -1,14 +1,12 @@
 package ru.juriasan.dirdiff.test;
 
-
 import org.testng.Assert;
-import org.testng.annotations.Test;
 import ru.juriasan.services.FileService;
-
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 public class ManyDirectoriesTest extends BaseTest {
 
@@ -25,37 +23,38 @@ public class ManyDirectoriesTest extends BaseTest {
     @Override
     public void generateData() throws IOException {
         if (directoriesCount <= 0 || firstDirectory == null || secondDirectory == null
-                || !firstDirectory.isDirectory() || !secondDirectory.isDirectory())
+                || !Files.isDirectory(firstDirectory) || !Files.isDirectory(secondDirectory))
             throw new RuntimeException();
         for (int i = 0; i < directoriesCount; i++) {
             String dirName = String.format("dir %d", i);
             String fileName = String.format("file %d", i);
-            File firstDir = FileService.getDirectoryManager().create(
-                    Paths.get(firstDirectory.getCanonicalPath(), dirName).toString());
-            File secondDir = FileService.getDirectoryManager().create(
-                    Paths.get(secondDirectory.getCanonicalPath(), dirName).toString());
-            FileService.getPlainFileManager().create(Paths.get(firstDir.getCanonicalPath(), fileName).toString());
-            File file = FileService.getPlainFileManager().create(Paths.get(secondDir.getCanonicalPath(), fileName)
+            Path firstDir = FileService.getDirectoryManager().create(
+                    Paths.get(firstDirectory.toRealPath().toString(), dirName).toString());
+            Path secondDir = FileService.getDirectoryManager().create(
+                    Paths.get(secondDirectory.toRealPath().toString(), dirName).toString());
+            FileService.getPlainFileManager().create(Paths.get(firstDir.toRealPath().toString(), fileName).toString());
+            Path file = FileService.getPlainFileManager().create(Paths.get(secondDir.toRealPath().toString(), fileName)
                     .toString());
-            try (FileWriter w = new FileWriter(file)) {
-                w.write("HW!");
-            }
+            FileService.write(file, "HW!");
         }
     }
 
     @Override
     public void checkData() throws IOException {
-        if (resultDirectory == null || !resultDirectory.isDirectory())
+        if (resultDirectory == null || !Files.isDirectory(resultDirectory))
             Assert.fail();
 
-        File[] files = resultDirectory.listFiles();
-        if (files == null || files.length != directoriesCount)
+        Collection<Path> files = FileService.getDirectoryManager().getFiles(resultDirectory);
+        if (files == null || files.size() != directoriesCount)
             Assert.fail();
-
-        for (int i = 0; i < directoriesCount; i++) {
-            File current = files[i];
-            FileService.assertExists(current);
-            FileService.assertDirectory(current);
-        }
+        files.forEach(file -> {
+            try {
+                FileService.assertExists(file);
+                FileService.assertDirectory(file);
+            }
+            catch (IOException ex) {
+                Assert.fail();
+            }
+        });
     }
 }

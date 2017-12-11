@@ -1,19 +1,18 @@
 package ru.juriasan.dirdiff.test;
 
-import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
 import ru.juriasan.services.FileService;
 import ru.juriasan.util.NewFilenameManager;
-
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DifferentFilesWithEqualNames  extends BaseTest {
 
-    File firstFile;
-    File secondFile;
+    Path firstFile;
+    Path secondFile;
     private static final String NAME = "Different Files With Equal Names";
     private static final int FILE_COUNT = 2;
 
@@ -23,40 +22,41 @@ public class DifferentFilesWithEqualNames  extends BaseTest {
 
     @Override
     public void generateData() throws IOException {
-        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.getCanonicalPath(),
+        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
                 "file1").toString());
-        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.getCanonicalPath(),
+        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
                 "file1").toString());
-        try(FileWriter w = new FileWriter(secondFile)) {
-            w.write("HW!");
-        }
+        FileService.write(secondFile, "HW!");
     }
 
     @Override
     public void checkData() throws IOException {
         if (resultDirectory == null)
             Assert.fail();
-        File[] result = resultDirectory.listFiles();
-        if (result == null)
-            throw new RuntimeException();
-        if (result.length != FILE_COUNT)
+        List<Path> result = new ArrayList<>(FileService.getDirectoryManager().getFiles(resultDirectory));
+        if (result.size() != FILE_COUNT)
             Assert.fail();
-        File firstFile = result[0];
-        File secondFile = result [1];
-        String firstName = firstFile.getName();
-        String secondName = secondFile.getName();
-        NewFilenameManager firstNameManager = new NewFilenameManager(firstName);
-        NewFilenameManager secondNameManager = new NewFilenameManager(secondName);
+        Path firstFile = result.get(0);
+        Path secondFile = result.get(1);
+        String firstName = firstFile.getFileName().toString();
+        String secondName = secondFile.getFileName().toString();
+        //NewFilenameManager firstNameManager = new NewFilenameManager(firstName);
+        //NewFilenameManager secondNameManager = new NewFilenameManager(secondName);
+        NewFilenameManager manager =  firstName.contains(secondName) ? new NewFilenameManager(secondName) :
+                secondName.contains(firstName) ? new NewFilenameManager(firstName) : null;
+        if (manager == null)
+            Assert.fail();
 
-        if (firstNameManager.matchesStrictNumberForm(firstName))
-            if (secondNameManager.matchesStrictNumberForm(secondName) ||
-                    !secondNameManager.matchesNonStrictNumberForm(secondName))
+        if (manager.matchesStrictNumberForm(firstName)) {
+            if (manager.matchesStrictNumberForm(secondName) ||
+                    !manager.matchesNonStrictNumberForm(secondName))
                 Assert.fail();
-        else if (!firstNameManager.matchesNonStrictNumberForm(firstName) ||
-                    !secondNameManager.matchesStrictNumberForm(secondName))
+        }
+        else if (!manager.matchesNonStrictNumberForm(firstName) ||
+                    !manager.matchesStrictNumberForm(secondName))
                 Assert.fail();
 
-        if (!FileUtils.contentEquals(firstFile, this.firstFile) || !FileUtils.contentEquals(secondFile,
+        if (!FileService.contentEquals(firstFile, this.firstFile) || !FileService.contentEquals(secondFile,
                 this.secondFile))
             Assert.fail();
     }

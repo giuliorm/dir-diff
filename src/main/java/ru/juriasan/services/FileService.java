@@ -1,13 +1,15 @@
 package ru.juriasan.services;
 
-import java.io.*;
-import java.nio.file.CopyOption;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Set;
-
 
 public abstract  class FileService {
 
@@ -18,10 +20,8 @@ public abstract  class FileService {
     protected static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user doesn't have " +
             "enough permissions.";
     protected static final String FILE_DOES_NOT_EXISTS = "File %s does not exists.";
-    protected static final String FILE_ALREADY_EXISTS = "File %s already exists.";
     protected static final String FILE_SHOULD_BE_A_DIRECTORY = "The file %s should be a directory";
     protected static final String FILE_IS_NOT_READABLE = "File %s is not readable.";
-    protected static final String FILE_IS_NOT_WRITEABLE = "File %s is not writeable.";
     protected static final String FILE_IS_NOT_EXECUTABLE = "File %s is not executable.";
     protected static final String CANNOT_OBTAIN_LIST_OF_FILES = "Cannot obtain the list of files from file %s.";
 
@@ -60,7 +60,7 @@ public abstract  class FileService {
         return Objects.equals(first.getFileName(), second.getFileName());
     }
 
-    private void closeStram(InputStream stream) {
+    protected static void closeStram(Closeable stream) {
         if (stream == null)
             return;
         try {
@@ -71,7 +71,7 @@ public abstract  class FileService {
         }
     }
 
-    private boolean contentEquals(InputStream first, InputStream second) throws IOException {
+    private static boolean contentEquals(InputStream first, InputStream second) throws IOException {
         int ch1, ch2;
         boolean equals = true;
         while((ch1 = first.read())!= -1 && (ch2 = second.read()) != -1) {
@@ -83,7 +83,7 @@ public abstract  class FileService {
         return equals && first.read() == -1 && second.read() == -1;
     }
 
-    public boolean contentEquals(Path first, Path second) throws  IOException {
+    public static boolean contentEquals(Path first, Path second) throws  IOException {
         boolean firstExists = Files.exists(first);
         if (firstExists != Files.exists(second))
             return false;
@@ -96,8 +96,8 @@ public abstract  class FileService {
 
         if (first.toFile().length() != second.toFile().length())
             return false;
-        if (!Objects.equals(first.toRealPath().toString(), second.toRealPath().toString()))
-            return false;
+        //if (!Objects.equals(first.getFileName().toString(), second.getFileName().toString()))
+        //    return false;
         InputStream firstReader = null;
         InputStream secondReader = null;
         try {
@@ -107,6 +107,13 @@ public abstract  class FileService {
         } finally {
             closeStram(firstReader);
             closeStram(secondReader);
+        }
+    }
+
+    public static void write(Path file, String string) throws IOException {
+        Charset charset = Charset.forName("UTF-8");
+        try (BufferedWriter writer = Files.newBufferedWriter(file, charset)) {
+            writer.write(string, 0, string.length());
         }
     }
 
@@ -142,11 +149,6 @@ public abstract  class FileService {
     public static void assertReadable(Path file) throws IOException {
         if (!Files.isExecutable(file))
             throw new IOException(String.format(FILE_IS_NOT_READABLE, file.toRealPath()));
-    }
-
-    public static void assertNotExists(Path file) throws IOException {
-        if (Files.exists(file))
-            throw new FileAlreadyExistsException(String.format(FILE_ALREADY_EXISTS, file.toRealPath()));
     }
 
     public static void assertExists(Path file) throws IOException {

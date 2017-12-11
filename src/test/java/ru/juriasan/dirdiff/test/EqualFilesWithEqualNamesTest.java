@@ -2,15 +2,15 @@ package ru.juriasan.dirdiff.test;
 
 import org.testng.Assert;
 import ru.juriasan.services.FileService;
-
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 public class EqualFilesWithEqualNamesTest extends BaseTest {
 
-    File firstFile;
-    File secondFile;
+    Path firstFile;
+    Path secondFile;
     private static final String NAME = "Equal Files With Different Names";
     private static final int FILE_COUNT = 2;
 
@@ -20,9 +20,9 @@ public class EqualFilesWithEqualNamesTest extends BaseTest {
 
     @Override
     public void generateData() throws IOException {
-        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.getCanonicalPath(),
+        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
                 "file1").toString());
-        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.getCanonicalPath(),
+        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
                 "file1").toString());
     }
 
@@ -32,10 +32,8 @@ public class EqualFilesWithEqualNamesTest extends BaseTest {
             Assert.fail();
         FileService.assertExists(resultDirectory);
         FileService.assertDirectory(resultDirectory);
-        File[] files = resultDirectory.listFiles();
-        if (files == null)
-            throw new RuntimeException();
-        if (files.length != 0)
+        Collection<Path> result = FileService.getDirectoryManager().getFiles(resultDirectory);
+        if (result.size() != 0)
             Assert.fail();
     }
 }
