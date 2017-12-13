@@ -117,7 +117,8 @@ public class DirectoryService extends FileService {
     }
     for ( Path file : sourceFiles ) {
       if ( Files.isDirectory(file) ) {
-        copy(file.toRealPath().toString(), NewFilenameManager.newPath(file, targetDirectory));
+        //Path subDirectory = Paths.get(targetDirectory.toRealPath().toString(), source.getFileName().toString());
+        copy(file.toRealPath(), target.toRealPath());
       } else {
         FileService.getPlainFileManager().copy(file.toRealPath().toString(), NewFilenameManager.newPath(file, target));
       }

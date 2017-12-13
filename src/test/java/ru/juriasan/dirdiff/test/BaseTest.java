@@ -76,7 +76,7 @@ public abstract  class BaseTest {
       ex = e;
     }
     finally {
-      clean(rootDirectoryPath);
+      //clean(rootDirectoryPath);
       if ( ex != null ) {
         Assert.fail();
       }

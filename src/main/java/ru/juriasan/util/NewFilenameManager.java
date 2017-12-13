@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -22,11 +23,13 @@ public class NewFilenameManager implements DirectoryStream.Filter<Path> {
   private static final String NUMBER_FORM_STRICT = "%s[ ]?(\\([1-9]+[0-9]*\\))";
 
   private static final Pattern numberPattern = Pattern.compile(NUMBER_PATTERN_STRING);
-  private static final Pattern anyNamePatternNonStrict = Pattern.compile("^(.*([ ]\\(([1-9]+[0-9]*)\\))?)$");
 
   private String sourceName;
 
   public NewFilenameManager(String sourceName) {
+    if ( sourceName == null ) {
+      throw new NullPointerException("Source name cannot be null");
+    }
     this.namePatternNotStrict = Pattern.compile(String.format(NUMBER_FORM_NOT_STRICT, sourceName));
     this.namePatternStrict = Pattern.compile(String.format(NUMBER_FORM_STRICT, sourceName));
     this.sourceName = sourceName;
@@ -41,10 +44,12 @@ public class NewFilenameManager implements DirectoryStream.Filter<Path> {
   }
 
   public String newName(String name) {
-    Matcher m = anyNamePatternNonStrict.matcher(name);
-    String newName = name;
-    if ( m.find() ) {
-      newName =  String.format("%s (1)", name);
+    String newName = String.format("%s (1)", sourceName);
+
+    if (Objects.equals(name, sourceName) && !numberPattern.matcher(sourceName).find())
+      return newName;
+    //Matcher m = anyNamePatternNonStrict.matcher(name);
+    //if ( m.find() ) {
       try {
         Matcher numberMatcher = numberPattern.matcher(name);
         if ( numberMatcher.find() ) {
@@ -55,13 +60,15 @@ public class NewFilenameManager implements DirectoryStream.Filter<Path> {
       } catch ( NumberFormatException ex ) {
         ex.printStackTrace();
       }
-    }
+    //}
     return newName;
   }
 
   @Override
   public boolean accept(Path file) throws IOException {
-    return anyNamePatternNonStrict.matcher(file.getFileName().toString()).matches();
+    return file.getFileName().toString().equals(sourceName) ||
+        numberPattern.matcher(file.getFileName().toString()).matches() ||
+            numberPattern.matcher(sourceName).find() && sourceName.contains(file.getFileName().toString());
   }
 
   public static synchronized String newPath(Path source, Path targetDirectory) throws IOException {
