@@ -42,13 +42,13 @@ public class PlainFileService extends FileService {
     Iterator<Path> firstFiles = first.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
     Iterator<Path> secondFiles = second.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
     boolean isThereADiff = false;
-    while(firstFiles.hasNext() || secondFiles.hasNext()) {
+    while( firstFiles.hasNext() || secondFiles.hasNext() ) {
       Path firstNext = firstFiles.hasNext() ? firstFiles.next() : null;
       Path secondNext = secondFiles.hasNext() ? secondFiles.next() : null;
-      if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
-        if (diff(firstNext, secondNext, result)) {
+      if ( firstNext != null && secondNext != null && compareNames(firstNext, secondNext) ) {
+        if ( diff(firstNext, secondNext, result) ) {
           isThereADiff |= true;
-          if (!Files.exists(result)) {
+          if ( !Files.exists(result) ) {
             result = FileService.getDirectoryManager().create(result);
           }
           copy(firstNext.toRealPath().toString(), NewFilenameManager.newPath(firstNext, result));
@@ -57,11 +57,11 @@ public class PlainFileService extends FileService {
       } else {
         isThereADiff |= true;
 
-        if (firstNext != null) {
+        if ( firstNext != null ) {
           copy(firstNext.toRealPath().toString(), NewFilenameManager.newPath(firstNext, result));
         }
 
-        if (secondNext != null) {
+        if ( secondNext != null ) {
           copy(secondNext.toRealPath().toString(), NewFilenameManager.newPath(secondNext, result));
         }
       }
@@ -69,15 +69,15 @@ public class PlainFileService extends FileService {
     return isThereADiff;
   }
 
-    @Override
-    public synchronized void copy(Path source, Path target) throws IOException {
-      copyFile(source, target);
-    }
+  @Override
+  public synchronized void copy(Path source, Path target) throws IOException {
+    copyFile(source, target);
+  }
 
-    @Override
-    public synchronized void copy(String pathSource, String pathTarget) throws IOException {
-      Path source = get(pathSource);
-      Path target = Paths.get(pathTarget);
-      copy(source, target);
-    }
+  @Override
+  public synchronized void copy(String pathSource, String pathTarget) throws IOException {
+    Path source = get(pathSource);
+    Path target = Paths.get(pathTarget);
+    copy(source, target);
+  }
 }

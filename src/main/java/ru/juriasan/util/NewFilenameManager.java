@@ -15,11 +15,14 @@ public class NewFilenameManager implements DirectoryStream.Filter<Path> {
 
   private Pattern namePatternNotStrict;
   private Pattern namePatternStrict;
-  private static final String numberPatternString = "\\(([1-9]+[0-9]*)\\)$";
-  private static final Pattern numberPattern = Pattern.compile(numberPatternString);
-  private static final Pattern anyNamePatternNonStrict = Pattern.compile("(.*([ ]\\(([1-9]+[0-9]*)\\))?)");
+
+  private static final String NUMBER_PATTERN_STRING = "\\(([1-9]+[0-9]*)\\)$";
   private static final String NUMBER_FORM_NOT_STRICT = "%s[ ]?(\\([1-9]*\\))?";
   private static final String NUMBER_FORM_STRICT = "%s[ ]?(\\([1-9]+[0-9]*\\))";
+
+  private static final Pattern numberPattern = Pattern.compile(NUMBER_PATTERN_STRING);
+  private static final Pattern anyNamePatternNonStrict = Pattern.compile("(.*([ ]\\(([1-9]+[0-9]*)\\))?)");
+
   private String sourceName;
 
   public NewFilenameManager(String sourceName) {
@@ -39,15 +42,15 @@ public class NewFilenameManager implements DirectoryStream.Filter<Path> {
   public String newName(String name) {
     Matcher m = anyNamePatternNonStrict.matcher(name);
     String newName = String.format("%s (1)", name);
-    if (m.find()) {
+    if ( m.find() ) {
       try {
         Matcher numberMatcher = numberPattern.matcher(name);
-        if (numberMatcher.find()) {
+        if ( numberMatcher.find() ) {
           String num = numberMatcher.group(1);
           int number = Integer.parseInt(num);
           newName = numberMatcher.replaceAll(String.format("(%d)", number + 1));
         }
-      } catch (NumberFormatException ex) {
+      } catch ( NumberFormatException ex ) {
         ex.printStackTrace();
       }
     }
@@ -64,13 +67,13 @@ public class NewFilenameManager implements DirectoryStream.Filter<Path> {
   }
 
   public String newPath(Path result) throws IOException {
-    if (sourceName == null || sourceName.equals(""))
+    if ( sourceName == null || sourceName.equals("") )
       throw new IOException("Filename cannot be null or empty!");
 
     String newName = Paths.get(result.toRealPath().toString(), sourceName).toString();
     List<Path> filter = FileService.getDirectoryManager().getFilesFiltered(result, this).
         stream().sorted(Comparator.comparing(Path::getFileName)).collect(Collectors.toList());
-    if (filter.size() > 0) {
+    if ( filter.size() > 0 ) {
       String newShortName = newName(filter.get(filter.size() - 1).getFileName().toString());
       newName = Paths.get(result.toRealPath().toString(), newShortName).toString();
     }

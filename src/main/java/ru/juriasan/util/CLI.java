@@ -12,7 +12,7 @@ public class CLI {
       "dir3 - path to resulting directory.";
 
   public CLI(String...args) {
-    if (args.length != 3) {
+    if ( args.length != 3 ) {
       System.out.println(USAGE);
       throw new RuntimeException();
     }
@@ -23,7 +23,7 @@ public class CLI {
   }
 
   public String getFirstDirectory() {
-      return this.firstDirectory;
+    return this.firstDirectory;
   }
 
   public String getSecondDirectory() {
@@ -31,6 +31,6 @@ public class CLI {
   }
 
   public String getResultDirectory() {
-      return this.resultDirectory;
+    return this.resultDirectory;
   }
 }

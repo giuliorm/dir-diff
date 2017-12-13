@@ -9,32 +9,33 @@ import ru.juriasan.services.FileService;
 
 public class EqualFilesWithEqualNamesTest extends BaseTest {
 
-    Path firstFile;
-    Path secondFile;
-    private static final String NAME = "Equal Files With Different Names";
+  private Path firstFile;
+  private Path secondFile;
 
-    public EqualFilesWithEqualNamesTest(String rootPath)  {
-        super(NAME, rootPath);
-    }
+  private static final String NAME = "Equal Files With Different Names";
 
-    @Override
-    public void generateData() throws IOException {
-        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
-                "file1").toString());
-        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
-                "file1").toString());
-    }
+  public EqualFilesWithEqualNamesTest(String rootPath)  {
+      super(NAME, rootPath);
+  }
 
-    @Override
-    public void checkData() throws IOException {
-        if (resultDirectory == null) {
-            Assert.fail();
-        }
-        FileService.assertExists(resultDirectory);
-        FileService.assertDirectory(resultDirectory);
-        Collection<Path> result = FileService.getDirectoryManager().getFiles(resultDirectory);
-        if (result.size() != 0) {
-            Assert.fail();
-        }
+  @Override
+  public void generateData() throws IOException {
+    firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
+        "file1").toString());
+    secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
+        "file1").toString());
+  }
+
+  @Override
+  public void checkData() throws IOException {
+    if ( resultDirectory == null ) {
+      Assert.fail();
     }
+    FileService.assertExists(resultDirectory);
+    FileService.assertDirectory(resultDirectory);
+    Collection<Path> result = FileService.getDirectoryManager().getFiles(resultDirectory);
+    if ( result.size() != 0 ) {
+        Assert.fail();
+    }
+  }
 }

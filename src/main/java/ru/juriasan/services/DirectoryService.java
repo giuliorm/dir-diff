@@ -46,9 +46,10 @@ public class DirectoryService extends FileService {
 
   @Override
   public boolean diff(Path first, Path second, Path result) throws IOException {
-    if (first == null || second == null || result == null) {
+    if ( first == null || second == null || result == null ) {
         throw new NullPointerException("Diff arguments cannot be null");
     }
+
     Collection<Path> firstFiles = getFiles(first);
     Collection<Path> secondFiles = getFiles(second);
     Set<Path> firstDirectories = new HashSet<>();
@@ -56,15 +57,15 @@ public class DirectoryService extends FileService {
     Set<Path> firstPlainFiles = new HashSet<>();
     Set<Path> secondPlainFiles = new HashSet<>();
 
-    for(Path file : firstFiles)
-      if (Files.isDirectory(file)) {
+    for( Path file : firstFiles )
+      if ( Files.isDirectory(file) ) {
         firstDirectories.add(file);
       } else {
         firstPlainFiles.add(file);
       }
 
-    for(Path file : secondFiles)
-      if (Files.isDirectory(file)) {
+    for( Path file : secondFiles )
+      if ( Files.isDirectory(file) ) {
         secondDirectories.add(file);
       } else {
         secondPlainFiles.add(file);
@@ -80,18 +81,18 @@ public class DirectoryService extends FileService {
     Iterator<Path> firstDirectories = first.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
     Iterator<Path> secondDirectories = second.stream().sorted(Comparator.comparing(Path::getFileName)).iterator();
     boolean isThereDiff = false;
-    while(firstDirectories.hasNext() || secondDirectories.hasNext()) {
+    while( firstDirectories.hasNext() || secondDirectories.hasNext() ) {
       Path firstNext = firstDirectories.hasNext() ? firstDirectories.next() : null;
       Path secondNext = secondDirectories.hasNext() ? secondDirectories.next() : null;
-      if (firstNext != null && secondNext != null && compareNames(firstNext, secondNext)) {
+      if ( firstNext != null && secondNext != null && compareNames(firstNext, secondNext) ) {
         Path newDirectory = Paths.get(NewFilenameManager.newPath(firstNext, result));
         isThereDiff |= diff(firstNext, secondNext, newDirectory);
       } else {
         isThereDiff |= true;
-        if (firstNext != null) {
+        if ( firstNext != null ) {
             copy(firstNext, result);
         }
-        if (secondNext != null) {
+        if ( secondNext != null ) {
             copy(secondNext, result);
         }
       }
@@ -110,10 +111,10 @@ public class DirectoryService extends FileService {
   public void copy(Path source, Path targetDirectory) throws IOException {
     Iterable<Path> sourceFiles = getFiles(source);
     Path target = create(NewFilenameManager.newPath(source, targetDirectory));
-    if (sourceFiles == null) {
+    if ( sourceFiles == null ) {
       throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, source.toRealPath()));
     }
-    for (Path file : sourceFiles) {
+    for ( Path file : sourceFiles ) {
       FileService.getPlainFileManager().copy(file.toRealPath().toString(), NewFilenameManager.newPath(file, target));
     }
   }
@@ -121,22 +122,22 @@ public class DirectoryService extends FileService {
   public Collection<Path> getFiles(Path file) throws IOException {
     List<Path> files = new ArrayList<>();
     DirectoryStream<Path> stream = Files.newDirectoryStream(file);
-    for (Path f : stream) {
+    for ( Path f : stream ) {
         files.add(f);
     }
     closeStream(stream);
     return files;
   }
 
-    public Collection<Path> getFilesFiltered(Path file, DirectoryStream.Filter filter) throws IOException {
+  public Collection<Path> getFilesFiltered(Path file, DirectoryStream.Filter filter) throws IOException {
     List<Path> files = new ArrayList<>();
     DirectoryStream<Path> stream = Files.newDirectoryStream(file);
-    for (Path f : stream) {
-      if (filter != null && filter.accept(f)) {
+    for ( Path f : stream ) {
+      if ( filter != null && filter.accept(f) ) {
           files.add(f);
         }
     }
     closeStream(stream);
     return files;
-    }
-    }
+  }
+}

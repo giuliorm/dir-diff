@@ -7,25 +7,26 @@ import ru.juriasan.services.FileService;
 
 public class DifferentFilesWithDifferentNamesTest extends BaseTest {
 
-    Path firstFile;
-    Path secondFile;
-    private static final String NAME = "Different Files with Different Names";
+  private Path firstFile;
+  private Path secondFile;
 
-    public DifferentFilesWithDifferentNamesTest(String rootPath) {
-        super(NAME, rootPath);
-    }
+  private static final String NAME = "Different Files with Different Names";
 
-    @Override
-    public void generateData() throws IOException {
-        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
-                "file1").toString());
-        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
-                "file2").toString());
-        FileService.write(secondFile, "HW!");
-    }
+  public DifferentFilesWithDifferentNamesTest(String rootPath) {
+      super(NAME, rootPath);
+  }
 
-    @Override
-    public void checkData() throws IOException {
-       checkDifferentFiles(firstFile, secondFile);
-    }
+  @Override
+  public void generateData() throws IOException {
+    firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
+        "file1").toString());
+    secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
+        "file2").toString());
+    FileService.write(secondFile, "HW!");
+  }
+
+  @Override
+  public void checkData() throws IOException {
+    checkDifferentFiles(firstFile, secondFile);
+  }
 }

@@ -12,12 +12,13 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract  class FileService {
+
   protected static final String CANNOT_SET_READABLE = "Cannot set file %s as readable. Possibly, user doesn't have" +
-  "enough permissions.";
+      "enough permissions.";
   protected static final String CANNOT_SET_WRITABLE = "Cannot set file %s as writeable. Possibly, user doesn't have " +
-  "enough permissions.";
-  protected static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user doesn't have " +
-  "enough permissions.";
+      "enough permissions.";
+  protected static final String CANNOT_SET_EXECUTABLE = "Cannot set file %s as executable. Possibly, user has not " +
+      "enough permissions.";
   protected static final String FILE_DOES_NOT_EXISTS = "File %s does not exists.";
   protected static final String FILE_SHOULD_BE_A_DIRECTORY = "The file %s should be a directory";
   protected static final String FILE_IS_NOT_READABLE = "File %s is not readable.";
@@ -28,9 +29,9 @@ public abstract  class FileService {
   private volatile static PlainFileService plainFileManager;
 
   public static DirectoryService getDirectoryManager() {
-    if (directoryManager == null) {
-      synchronized (FileService.class) {
-        if (directoryManager == null) {
+    if ( directoryManager == null ) {
+      synchronized ( FileService.class ) {
+        if ( directoryManager == null ) {
           directoryManager = new DirectoryService();
         }
       }
@@ -39,9 +40,9 @@ public abstract  class FileService {
   }
 
   public static FileService getPlainFileManager() {
-    if (plainFileManager == null) {
-      synchronized (FileService.class) {
-        if (plainFileManager == null) {
+    if ( plainFileManager == null ) {
+      synchronized ( FileService.class ) {
+        if ( plainFileManager == null ) {
           plainFileManager = new PlainFileService();
         }
       }
@@ -52,7 +53,7 @@ public abstract  class FileService {
   public abstract Path get(String path) throws IOException;
   public abstract Path create(String path) throws IOException;
   public abstract boolean diff(Path first, Path second, Path result) throws IOException;
-  public abstract  boolean diff(String first, String second, String result) throws IOException;
+  public abstract boolean diff(String first, String second, String result) throws IOException;
   public abstract boolean diff(Set<Path> first, Set<Path> second, Path result) throws IOException;
   public abstract void copy(String pathSource, String pathTarget) throws IOException;
   public abstract void copy(Path source, Path target) throws IOException;
@@ -62,13 +63,13 @@ public abstract  class FileService {
   }
 
   protected static void closeStream(Closeable stream) {
-    if (stream == null) {
+    if ( stream == null ) {
       return;
     }
     try {
       stream.close();
     }
-    catch (IOException ex) {
+    catch ( IOException ex ) {
       ex.printStackTrace();
     }
   }
@@ -76,7 +77,7 @@ public abstract  class FileService {
   private static boolean contentEquals(InputStream first, InputStream second) throws IOException {
     int ch1, ch2;
     boolean equals = true;
-    while((ch1 = first.read())!= -1 && (ch2 = second.read()) != -1) {
+    while( (ch1 = first.read())!= -1 && (ch2 = second.read()) != -1 ) {
       if (ch1 != ch2) {
         equals = false;
         break;
@@ -88,19 +89,19 @@ public abstract  class FileService {
   public static boolean contentEquals(Path first, Path second) throws  IOException {
     boolean firstExists = Files.exists(first);
 
-    if (firstExists != Files.exists(second)) {
+    if ( firstExists != Files.exists(second) ) {
       return false;
-    } else if (!firstExists) {
+    } else if ( !firstExists ) {
       return true;
     }
 
-    if (Files.isDirectory(first) && Files.isDirectory(second)) {
+    if ( Files.isDirectory(first) && Files.isDirectory(second) ) {
       throw new IOException("Cannot compare contents of directories");
-    } else if (Files.isDirectory(first) || Files.isDirectory(second)) {
+    } else if ( Files.isDirectory(first) || Files.isDirectory(second) ) {
       return false;
     }
 
-    if (first.toFile().length() != second.toFile().length()) {
+    if ( first.toFile().length() != second.toFile().length() ) {
       return false;
     }
     InputStream firstReader = null;
@@ -117,7 +118,7 @@ public abstract  class FileService {
 
   public static void write(Path file, String string) throws IOException {
     Charset charset = Charset.forName("UTF-8");
-    try (BufferedWriter writer = Files.newBufferedWriter(file, charset)) {
+    try ( BufferedWriter writer = Files.newBufferedWriter(file, charset) ) {
       writer.write(string, 0, string.length());
     }
   }
@@ -127,43 +128,43 @@ public abstract  class FileService {
   }
 
   public static void setExecutableAndAssert(Path file) throws IOException {
-    if (!file.toFile().setExecutable(true)) {
+    if ( !file.toFile().setExecutable(true) ) {
       throw new IOException(String.format(CANNOT_SET_EXECUTABLE, file.toRealPath()));
     }
   }
 
   public static void setWriteableAndAssert(Path file) throws IOException {
-    if (!file.toFile().setWritable(true)) {
+    if ( !file.toFile().setWritable(true) ) {
       throw new IOException(String.format(CANNOT_SET_WRITABLE, file.toRealPath()));
     }
   }
 
   public static void setReadableAndAssert(Path file) throws IOException {
-    if (!file.toFile().setReadable(true)) {
+    if ( !file.toFile().setReadable(true) ) {
       throw new IOException(String.format(CANNOT_SET_READABLE, file.toRealPath()));
     }
   }
 
   public static void assertExecutable(Path file) throws IOException {
-    if (!Files.isExecutable(file)) {
+    if ( !Files.isExecutable(file) ) {
       throw new IOException(String.format(FILE_IS_NOT_EXECUTABLE, file.toRealPath()));
     }
   }
 
   public static void assertDirectory(Path file) throws IOException {
-    if (!Files.isDirectory(file)) {
+    if ( !Files.isDirectory(file) ) {
       throw new IOException(String.format(FILE_SHOULD_BE_A_DIRECTORY, file.toRealPath()));
     }
   }
 
   public static void assertReadable(Path file) throws IOException {
-    if (!Files.isExecutable(file)) {
+    if ( !Files.isExecutable(file) ) {
       throw new IOException(String.format(FILE_IS_NOT_READABLE, file.toRealPath()));
     }
   }
 
   public static void assertExists(Path file) throws IOException {
-      if (!Files.exists(file)) {
+      if ( !Files.exists(file) ) {
         throw new FileAlreadyExistsException(String.format(FILE_DOES_NOT_EXISTS, file.toRealPath()));
       }
     }
