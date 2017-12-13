@@ -8,7 +8,6 @@
     <artifactId>dir-diff</artifactId>
     <version>1.0.0</version>
 
-    <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
     <dependencies>
         <dependency>
             <groupId>org.testng</groupId>
@@ -17,7 +16,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <!-- https://mvnrepository.com/artifact/org.testng/testng -->
     <build>
         <plugins>
             <plugin>
