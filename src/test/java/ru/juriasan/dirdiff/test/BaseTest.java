@@ -1,119 +1,123 @@
 package ru.juriasan.dirdiff.test;
 
-import org.apache.commons.io.FileUtils;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-import ru.juriasan.services.FileService;
-
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import org.testng.Assert;
+import ru.juriasan.services.FileService;
+import ru.juriasan.util.NewFilenameManager;
 
 public abstract  class BaseTest {
 
-    String rootDirectoryPath;
-    String name;
-    File firstDirectory;
-    File secondDirectory;
-    File resultDirectory;
+  protected String rootDirectoryPath;
+  protected String name;
 
-    public BaseTest(String name, String rootDirectoryPath)  {
-        this.name = name;
-        this.rootDirectoryPath = rootDirectoryPath;
+  protected Path firstDirectory;
+  protected Path secondDirectory;
+  protected Path resultDirectory;
+
+  public BaseTest(String name, String rootDirectoryPath)  {
+    this.name = name;
+    this.rootDirectoryPath = rootDirectoryPath;
+  }
+
+  private void createRoots() throws IOException {
+    Path root = Paths.get(rootDirectoryPath);
+    if ( !Files.exists(root) ) {
+      FileService.getDirectoryManager().create(root);
     }
+    this.firstDirectory = FileService.getDirectoryManager().create(Paths.get(rootDirectoryPath, "first"));
+    this.secondDirectory = FileService.getDirectoryManager().create(Paths.get(rootDirectoryPath, "second"));
+    this.resultDirectory = FileService.getDirectoryManager().create(Paths.get(rootDirectoryPath, "result"));
+  }
 
-    private void createRoots() throws IOException {
-        this.firstDirectory = FileService.getDirectoryManager().create(Paths.get(rootDirectoryPath, "first")
-                .toString());
-        this.secondDirectory = FileService.getDirectoryManager().create(Paths.get(rootDirectoryPath, "second")
-                .toString());
-        this.resultDirectory = FileService.getDirectoryManager().create(Paths.get(rootDirectoryPath, "result")
-                .toString());
+  public void clean(Path dir) throws IOException {
+    if ( !Files.exists(dir) ) {
+      return;
     }
-
-    public boolean clean(File dir) {
-        if (!dir.exists())
-            return true;
-        if (!dir.isDirectory())
-            return dir.delete();
-        File[] files = dir.listFiles();
-        boolean result = true;
-        if (files == null)
-            return dir.delete();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                result &= clean(file);
-                result &= file.delete();
-            }else result &= file.delete();
-        }
-
-        return result;
+    if ( !Files.isDirectory(dir) ) {
+      Files.delete(dir);
+      return;
     }
-
-    public boolean clean(String rootDirectory) {
-        File dir = new File(rootDirectory);
-        return clean(dir);
+    List<Path> files = new ArrayList<>(FileService.getDirectoryManager().getFiles(dir));
+    for ( Path file : files ) {
+      if ( Files.isDirectory(file) ) {
+          clean(file);
+      } else Files.delete(file);
     }
+    Files.delete(dir);
+  }
 
-    public abstract void generateData() throws IOException;
+  public void clean(String rootDirectory) throws IOException {
+    Path dir = Paths.get(rootDirectory);
+    clean(dir);
+  }
 
-    public abstract void checkData() throws IOException ; /*{
-        if (resultDirectory == null || !resultDirectory.isDirectory())
-            Assert.fail();
-        File[] firstFiles = firstDirectory.listFiles();
-        File[] secondFiles = secondDirectory.listFiles();
-        if (firstFiles == null || secondFiles == null)
-            throw new RuntimeException();
-        Iterator<File> first =
-                Arrays.stream(firstFiles).sorted(Comparator.comparing(File::getName)).iterator();
-        Iterator<File> second =  Arrays.stream(secondFiles)
-                .sorted(Comparator.comparing(File::getName)).iterator();
-        File[] resultFiles = resultDirectory.listFiles();
-        if (resultFiles == null)
-            throw new RuntimeException();
-        Iterator<File> result =
-                Arrays.stream(resultFiles).sorted(Comparator.comparing(File::getName)).iterator();
+  public abstract void generateData() throws IOException;
+  public abstract void checkData() throws IOException;
 
+  public void run() throws IOException {
+    Throwable ex = null;
+    try {
+      clean(rootDirectoryPath);
+      createRoots();
+      generateData();
+      double startTime = System.currentTimeMillis();
+      FileService.getDirectoryManager().diff(firstDirectory, secondDirectory, resultDirectory);
+      double delay = System.currentTimeMillis() - startTime;
+      System.out.println(String.format("Time elapsed %f", delay));
+      checkData();
     }
- */
-    public void run() {
-        Throwable ex = null;
-        try {
-            clean(rootDirectoryPath);
-            createRoots();
-            generateData();
-            double startTime = System.currentTimeMillis();
-            FileService.getDirectoryManager().diff(firstDirectory, secondDirectory, resultDirectory);
-            double delay = System.currentTimeMillis() - startTime;
-            System.out.println(String.format("Time elapsed %f", delay));
-            checkData();
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
-            ex = e;
-        }
-        finally {
-            clean(rootDirectoryPath);
-            if (ex != null)
-                Assert.fail();
-        }
+    catch ( Throwable e ) {
+      e.printStackTrace();
+      ex = e;
     }
+    finally {
+      clean(rootDirectoryPath);
+      if ( ex != null ) {
+        Assert.fail();
+      }
+    }
+  }
 
-    public void checkDifferentFiles(File first, File second) throws IOException {
-        final int fileCount = 2;
-        if (resultDirectory == null)
-            Assert.fail();
-        File[] result = resultDirectory.listFiles();
-        if (result == null)
-            throw new RuntimeException();
-        if (result.length != fileCount)
-            Assert.fail();
-        File firstFile = result[0];
-        File secondFile = result [1];
-        if (!FileUtils.contentEquals(firstFile, first) || !FileUtils.contentEquals(secondFile, second))
-            Assert.fail();
+  public void checkDifferentFiles(Path first, Path second) throws IOException {
+    final int fileCount = 2;
+    if ( resultDirectory == null ) {
+      Assert.fail();
     }
+    List<Path> result = new ArrayList<>(FileService.getDirectoryManager().getFiles(resultDirectory));
+    if ( result.size() != fileCount ) {
+      Assert.fail();
+    }
+    Path firstFile = result.get(0);
+    Path secondFile = result.get(1);
+    if ( !FileService.contentEquals(firstFile, first) || !FileService.contentEquals(secondFile, second) ) {
+      Assert.fail();
+    }
+  }
+
+  protected String getInitialName(String firstName, String secondName) {
+    if ( firstName.contains(secondName) ) {
+      return secondName;
+    }
+    if ( secondName.contains(firstName) ) {
+      return firstName;
+    }
+    return null;
+  }
+
+  protected void checkNames(NewFilenameManager manager, String firstName, String secondName) {
+    if ( manager.matchesStrictNumberForm(firstName)) {
+      if ( manager.matchesStrictNumberForm(secondName) ||
+          !manager.matchesNonStrictNumberForm(secondName) ) {
+        Assert.fail();
+      }
+    } else if ( !manager.matchesNonStrictNumberForm(firstName) ||
+        !manager.matchesStrictNumberForm(secondName) ) {
+      Assert.fail();
+    }
+  }
 }

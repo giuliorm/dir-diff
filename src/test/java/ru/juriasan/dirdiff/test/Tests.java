@@ -1,36 +1,53 @@
 package ru.juriasan.dirdiff.test;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
-import org.testng.annotations.Test;
-
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.testng.annotations.Test;
+import ru.juriasan.services.FileService;
 
 public class Tests {
 
-    private static final String RESOURCES_PATH  = Paths.get("src", "test", "resources").toString();
+  private static final String RESOURCES_PATH  = Paths.get("src", "test", "resources").toString();
 
-    @Test
-    public void differentFilesWithDifferentNamesTest() {
-        new DifferentFilesWithDifferentNamesTest(RESOURCES_PATH).run();
-    }
+  private Tests() throws IOException {
+    Path resources = Paths.get(RESOURCES_PATH);
+    FileService.setReadableAndAssert(resources);
+    FileService.setExecutableAndAssert(resources);
+  }
+  @Test
+  public void differentFilesWithDifferentNamesTest() throws IOException {
+    String rootPath = Paths.get(RESOURCES_PATH, "differentFilesDifferentNames").toString();
+    new DifferentFilesWithDifferentNamesTest(rootPath).run();
+  }
 
-    @Test
-    public void differentFilesWithEqualNamesTest() {
-        new DifferentFilesWithEqualNames(RESOURCES_PATH).run();
-    }
+  @Test
+  public void differentFilesWithEqualNamesTest() throws IOException {
+    String rootPath = Paths.get(RESOURCES_PATH, "differentFilesEqualNames").toString();
+    new DifferentFilesWithEqualNamesTest(rootPath).run();
+  }
 
-    @Test
-    public void equalFilesWithEqualNamesTest() {
-        new EqualFilesWithEqualNamesTest(RESOURCES_PATH).run();
-    }
+  @Test
+  public void equalFilesWithEqualNamesTest() throws IOException {
+    String rootPath = Paths.get(RESOURCES_PATH, "equalFilesWithEqualNames").toString();
+    new EqualFilesWithEqualNamesTest(rootPath).run();
+  }
 
-    @Test
-    public void equalFilesWithDifferentNamesTest() {
-        new EqualFilesWithDifferentNamesTest(RESOURCES_PATH).run();
-    }
+  @Test
+  public void equalFilesWithDifferentNamesTest() throws IOException {
+    String rootPath = Paths.get(RESOURCES_PATH, "equalFilesWithDifferentNames").toString();
+    new EqualFilesWithDifferentNamesTest(rootPath).run();
+  }
 
-    @Ignore
-    public void manyDirectoriesTest()  {
-        new ManyDirectoriesTest(500, RESOURCES_PATH).run();
-    }
+  @Test
+  public void treeDifferentFilesWithEqualNamesTest() throws IOException {
+    String rootPath = Paths.get(RESOURCES_PATH, "threeDifferentFilesWithEqualNames").toString();
+    new ThreeDifferentFilesWithEqualNamesTest(rootPath).run();
+  }
+
+  @Test(enabled = false)
+  public void manyDirectoriesTest() throws IOException {
+    String rootPath = Paths.get(RESOURCES_PATH, "manyDirs").toString();
+    new ManyDirectoriesTest(500, rootPath).run();
+  }
 }
