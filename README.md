@@ -1,10 +1,6 @@
 # dir-diff
 An utility which compares two directories and creates new directory with a difference.
 
-This repo has two main working branches:
-- maser
-- multithreaded
-
 **master** implements main functionality of the application: generating a two-directories
 difference in the third directory.
 
@@ -18,6 +14,6 @@ directories in the _result_ dir).
 
 `mvn clean install` or `mvn clean package`
 
-taking  `dirdiff-1.0.0-shaded.jar`
+taking`dirdiff-1.0.0-shaded.jar`
 
 
