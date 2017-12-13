@@ -1,7 +1,5 @@
 package ru.juriasan.services;
 
-import ru.juriasan.util.NewFilenameManager;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
+import ru.juriasan.util.NewFilenameManager;
 
 public class PlainFileService extends FileService {
 

@@ -1,8 +1,8 @@
 package ru.juriasan;
 
+import java.io.IOException;
 import ru.juriasan.services.FileService;
 import ru.juriasan.util.CLI;
-import java.io.IOException;
 
 public class Main {
 

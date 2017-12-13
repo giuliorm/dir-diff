@@ -1,9 +1,9 @@
 package ru.juriasan.dirdiff.test;
 
-import ru.juriasan.services.FileService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import ru.juriasan.services.FileService;
 
 public class DifferentFilesWithDifferentNamesTest extends BaseTest {
 

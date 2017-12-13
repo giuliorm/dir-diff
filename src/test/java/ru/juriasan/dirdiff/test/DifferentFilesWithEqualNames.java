@@ -1,13 +1,13 @@
 package ru.juriasan.dirdiff.test;
 
-import org.testng.Assert;
-import ru.juriasan.services.FileService;
-import ru.juriasan.util.NewFilenameManager;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import org.testng.Assert;
+import ru.juriasan.services.FileService;
+import ru.juriasan.util.NewFilenameManager;
 
 public class DifferentFilesWithEqualNames  extends BaseTest {
 
@@ -40,21 +40,11 @@ public class DifferentFilesWithEqualNames  extends BaseTest {
         Path secondFile = result.get(1);
         String firstName = firstFile.getFileName().toString();
         String secondName = secondFile.getFileName().toString();
-        //NewFilenameManager firstNameManager = new NewFilenameManager(firstName);
-        //NewFilenameManager secondNameManager = new NewFilenameManager(secondName);
-        NewFilenameManager manager =  firstName.contains(secondName) ? new NewFilenameManager(secondName) :
-                secondName.contains(firstName) ? new NewFilenameManager(firstName) : null;
-        if (manager == null)
+        String initialName = getInitialName(firstName, secondName);
+        if (initialName == null)
             Assert.fail();
-
-        if (manager.matchesStrictNumberForm(firstName)) {
-            if (manager.matchesStrictNumberForm(secondName) ||
-                    !manager.matchesNonStrictNumberForm(secondName))
-                Assert.fail();
-        }
-        else if (!manager.matchesNonStrictNumberForm(firstName) ||
-                    !manager.matchesStrictNumberForm(secondName))
-                Assert.fail();
+        NewFilenameManager manager =  new NewFilenameManager(initialName);
+        checkNames(manager, firstName, secondName);
 
         if (!FileService.contentEquals(firstFile, this.firstFile) || !FileService.contentEquals(secondFile,
                 this.secondFile))

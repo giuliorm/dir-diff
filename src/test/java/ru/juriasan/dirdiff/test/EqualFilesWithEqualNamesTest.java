@@ -1,11 +1,11 @@
 package ru.juriasan.dirdiff.test;
 
-import org.testng.Assert;
-import ru.juriasan.services.FileService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import org.testng.Assert;
+import ru.juriasan.services.FileService;
 
 public class EqualFilesWithEqualNamesTest extends BaseTest {
 

@@ -1,12 +1,14 @@
 package ru.juriasan.dirdiff.test;
 
-import org.testng.Assert;
-import ru.juriasan.services.FileService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.testng.Assert;
+import ru.juriasan.services.FileService;
+import ru.juriasan.util.NewFilenameManager;
 
 public abstract  class BaseTest {
 
@@ -91,4 +93,23 @@ public abstract  class BaseTest {
         if (!FileService.contentEquals(firstFile, first) || !FileService.contentEquals(secondFile, second))
             Assert.fail();
     }
+
+    protected String getInitialName(String firstName, String secondName) {
+        if (firstName.contains(secondName))
+            return secondName;
+        if (secondName.contains(firstName))
+            return firstName;
+        return null;
+    }
+
+    protected void checkNames(NewFilenameManager manager, String firstName, String secondName) {
+        if (manager.matchesStrictNumberForm(firstName)) {
+            if (manager.matchesStrictNumberForm(secondName) ||
+                    !manager.matchesNonStrictNumberForm(secondName))
+                Assert.fail();
+        } else if (!manager.matchesNonStrictNumberForm(firstName) ||
+                !manager.matchesStrictNumberForm(secondName))
+            Assert.fail();
+    }
+
 }

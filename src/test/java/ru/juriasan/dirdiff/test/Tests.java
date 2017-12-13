@@ -1,10 +1,10 @@
 package ru.juriasan.dirdiff.test;
 
-import org.testng.annotations.Test;
-import ru.juriasan.services.FileService;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.testng.annotations.Test;
+import ru.juriasan.services.FileService;
 
 public class Tests {
 
@@ -37,6 +37,12 @@ public class Tests {
     public void equalFilesWithDifferentNamesTest() throws IOException {
         String rootPath = Paths.get(RESOURCES_PATH, "equalFilesWithDifferentNames").toString();
         new EqualFilesWithDifferentNamesTest(rootPath).run();
+    }
+
+    @Test
+    public void treeDifferentFilesWithEqualNamesTest() throws IOException {
+        String rootPath = Paths.get(RESOURCES_PATH, "threeDifferentFilesWithEqualNames").toString();
+        new ThreeDifferentFilesWithEqualNamesTest(rootPath).run();
     }
 
     @Test(enabled = false)

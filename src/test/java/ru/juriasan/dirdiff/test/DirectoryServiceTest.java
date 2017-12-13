@@ -1,12 +1,12 @@
 package ru.juriasan.dirdiff.test;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
-import ru.juriasan.services.FileService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.testng.annotations.Test;
+import org.testng.Assert;
+import ru.juriasan.services.FileService;
 
 public class DirectoryServiceTest {
 
