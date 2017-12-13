@@ -1,38 +1,32 @@
 package ru.juriasan.dirdiff.test;
 
-import org.apache.commons.io.FileUtils;
-import org.testng.Assert;
-import ru.juriasan.services.FileService;
-
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import ru.juriasan.services.FileService;
 
 public class DifferentFilesWithDifferentNamesTest extends BaseTest {
 
-    File firstFile;
-    File secondFile;
-    private static final String NAME = "Different Files with Different Names";
-    private static final int FILE_COUNT = 2;
+  private Path firstFile;
+  private Path secondFile;
 
-    public DifferentFilesWithDifferentNamesTest(String rootPath) {
-        super(NAME, rootPath);
-    }
+  private static final String NAME = "Different Files with Different Names";
 
-    @Override
-    public void generateData() throws IOException {
-        firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.getCanonicalPath(),
-                "file1").toString());
-        secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.getCanonicalPath(),
-                "file2").toString());
-        try(FileWriter w = new FileWriter(secondFile)) {
-            w.write("HW!");
-        }
-    }
+  public DifferentFilesWithDifferentNamesTest(String rootPath) {
+      super(NAME, rootPath);
+  }
 
-    @Override
-    public void checkData() throws IOException {
-       checkDifferentFiles(firstFile, secondFile);
-    }
+  @Override
+  public void generateData() throws IOException {
+    firstFile = FileService.getPlainFileManager().create(Paths.get(firstDirectory.toRealPath().toString(),
+        "file1").toString());
+    secondFile = FileService.getPlainFileManager().create(Paths.get(secondDirectory.toRealPath().toString(),
+        "file2").toString());
+    FileService.write(secondFile, "HW!");
+  }
+
+  @Override
+  public void checkData() throws IOException {
+    checkDifferentFiles(firstFile, secondFile);
+  }
 }
