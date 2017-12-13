@@ -110,12 +110,17 @@ public class DirectoryService extends FileService {
   @Override
   public void copy(Path source, Path targetDirectory) throws IOException {
     Iterable<Path> sourceFiles = getFiles(source);
-    Path target = create(NewFilenameManager.newPath(source, targetDirectory));
+    String newPath = NewFilenameManager.newPath(source, targetDirectory);
+    Path target = create(newPath);
     if ( sourceFiles == null ) {
       throw new IOException(String.format(CANNOT_OBTAIN_LIST_OF_FILES, source.toRealPath()));
     }
     for ( Path file : sourceFiles ) {
-      FileService.getPlainFileManager().copy(file.toRealPath().toString(), NewFilenameManager.newPath(file, target));
+      if ( Files.isDirectory(file) ) {
+        copy(file.toRealPath().toString(), NewFilenameManager.newPath(file, targetDirectory));
+      } else {
+        FileService.getPlainFileManager().copy(file.toRealPath().toString(), NewFilenameManager.newPath(file, target));
+      }
     }
   }
 
