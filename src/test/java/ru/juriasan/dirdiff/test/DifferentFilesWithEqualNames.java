@@ -31,23 +31,27 @@ public class DifferentFilesWithEqualNames  extends BaseTest {
 
     @Override
     public void checkData() throws IOException {
-        if (resultDirectory == null)
+        if (resultDirectory == null) {
             Assert.fail();
+        }
         List<Path> result = new ArrayList<>(FileService.getDirectoryManager().getFiles(resultDirectory));
-        if (result.size() != FILE_COUNT)
+        if (result.size() != FILE_COUNT) {
             Assert.fail();
+        }
         Path firstFile = result.get(0);
         Path secondFile = result.get(1);
         String firstName = firstFile.getFileName().toString();
         String secondName = secondFile.getFileName().toString();
         String initialName = getInitialName(firstName, secondName);
-        if (initialName == null)
+        if (initialName == null) {
             Assert.fail();
+        }
         NewFilenameManager manager =  new NewFilenameManager(initialName);
         checkNames(manager, firstName, secondName);
 
         if (!FileService.contentEquals(firstFile, this.firstFile) || !FileService.contentEquals(secondFile,
-                this.secondFile))
+                this.secondFile)) {
             Assert.fail();
+        }
     }
 }

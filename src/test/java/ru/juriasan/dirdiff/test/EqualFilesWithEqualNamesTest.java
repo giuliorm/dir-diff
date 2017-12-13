@@ -12,7 +12,6 @@ public class EqualFilesWithEqualNamesTest extends BaseTest {
     Path firstFile;
     Path secondFile;
     private static final String NAME = "Equal Files With Different Names";
-    private static final int FILE_COUNT = 2;
 
     public EqualFilesWithEqualNamesTest(String rootPath)  {
         super(NAME, rootPath);
@@ -28,12 +27,14 @@ public class EqualFilesWithEqualNamesTest extends BaseTest {
 
     @Override
     public void checkData() throws IOException {
-        if (resultDirectory == null)
+        if (resultDirectory == null) {
             Assert.fail();
+        }
         FileService.assertExists(resultDirectory);
         FileService.assertDirectory(resultDirectory);
         Collection<Path> result = FileService.getDirectoryManager().getFiles(resultDirectory);
-        if (result.size() != 0)
+        if (result.size() != 0) {
             Assert.fail();
+        }
     }
 }

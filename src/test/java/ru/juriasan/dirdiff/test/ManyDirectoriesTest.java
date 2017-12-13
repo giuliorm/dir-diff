@@ -23,8 +23,9 @@ public class ManyDirectoriesTest extends BaseTest {
     @Override
     public void generateData() throws IOException {
         if (directoriesCount <= 0 || firstDirectory == null || secondDirectory == null
-                || !Files.isDirectory(firstDirectory) || !Files.isDirectory(secondDirectory))
+                || !Files.isDirectory(firstDirectory) || !Files.isDirectory(secondDirectory)) {
             throw new RuntimeException();
+        }
         for (int i = 0; i < directoriesCount; i++) {
             String dirName = String.format("dir %d", i);
             String fileName = String.format("file %d", i);
@@ -41,12 +42,14 @@ public class ManyDirectoriesTest extends BaseTest {
 
     @Override
     public void checkData() throws IOException {
-        if (resultDirectory == null || !Files.isDirectory(resultDirectory))
+        if (resultDirectory == null || !Files.isDirectory(resultDirectory)) {
             Assert.fail();
+        }
 
         Collection<Path> files = FileService.getDirectoryManager().getFiles(resultDirectory);
-        if (files == null || files.size() != directoriesCount)
+        if (files == null || files.size() != directoriesCount) {
             Assert.fail();
+        }
         files.forEach(file -> {
             try {
                 FileService.assertExists(file);

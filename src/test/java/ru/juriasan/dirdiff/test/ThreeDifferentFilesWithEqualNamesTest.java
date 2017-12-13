@@ -35,13 +35,15 @@ public class ThreeDifferentFilesWithEqualNamesTest extends BaseTest {
 
     @Override
     public void checkData() throws IOException {
-        if (resultDirectory == null)
+        if (resultDirectory == null) {
             Assert.fail();
+        }
         List<Path> result = new ArrayList<>(FileService.getDirectoryManager().getFiles(resultDirectory))
                 .stream().sorted((f1, f2) -> Long.compare(f1.toFile().length(), f2.toFile().length()))
                 .collect(Collectors.toList());
-        if (result.size() != FILE_COUNT)
+        if (result.size() != FILE_COUNT) {
             Assert.fail();
+        }
         Path firstFile = result.get(0);
         Path secondFile = result.get(1);
         Path thirdFile = result.get(2);
@@ -53,17 +55,22 @@ public class ThreeDifferentFilesWithEqualNamesTest extends BaseTest {
             initialName = getInitialName(firstName, thirdName);
             if (initialName == null) {
                 initialName = getInitialName(secondName, thirdName);
-                if (initialName == null)
+                if (initialName == null) {
                     Assert.fail();
-                else checkNames(new NewFilenameManager(initialName), secondName, thirdName);
+                } else {
+                    checkNames(new NewFilenameManager(initialName), secondName, thirdName);
+                }
+            } else {
+                checkNames(new NewFilenameManager(initialName), firstName, thirdName);
             }
-            else checkNames(new NewFilenameManager(initialName), firstName, thirdName);
+        } else {
+            checkNames(new NewFilenameManager(initialName), firstName, secondName);
         }
-        else checkNames(new NewFilenameManager(initialName), firstName, secondName);
 
         if (!FileService.contentEquals(firstFile, this.firstFile) || !FileService.contentEquals(secondFile,
-                this.secondFile) || !FileService.contentEquals(thirdFile, thirdFile))
+                this.secondFile) || !FileService.contentEquals(thirdFile, thirdFile)) {
             Assert.fail();
+        }
     }
 
 }

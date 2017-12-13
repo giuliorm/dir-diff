@@ -16,8 +16,9 @@ public class DirectoryServiceTest {
     public void createTestStringPath() throws IOException {
         String path = Paths.get(resourcesPath, "createTest").toString();
         Path result = FileService.getDirectoryManager().create(path);
-        if (result == null)
+        if (result == null) {
             Assert.fail();
+        }
         FileService.assertDirectory(result);
         FileService.assertExists(result);
         FileService.assertReadable(result);
