@@ -16,4 +16,6 @@ directories in the _result_ dir).
 
 taking`dirdiff-1.0.0-shaded.jar`
 
+# run
 
+`dirdiff-1.0.0.-shaded.jar firstDirectory secondDirectory resultDirectory`, where the `firstDirectory` and `secondDirectory` are directoriws, which are compared to each other, and the `resultDirectory` is the directory with the result (difference between two directories).
